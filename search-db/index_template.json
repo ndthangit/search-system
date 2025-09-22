@@ -1,0 +1,47 @@
+{
+    "index_patterns": [
+        "wikipedia-people*"
+    ],
+    "template": {
+        "settings": {
+            "number_of_shards": 1,
+            "number_of_replicas": 0,
+            "refresh_interval": "60s",
+            "translog.durability": "async",
+            "translog.sync_interval": "30s",
+            "merge.scheduler.max_thread_count": 1,
+            "indexing.slowlog.threshold.index.warn": "10s",
+            "indexing.slowlog.threshold.index.info": "5s",
+            "indexing.slowlog.level": "info"
+        },
+        "mappings": {
+            "dynamic": "strict",
+            "properties": {
+                "name": {
+                    "type": "text",
+                    "fields": {
+                        "keyword": {
+                            "type": "keyword"
+                        }
+                    }
+                },
+                "identifier": {
+                    "type": "keyword"
+                },
+                "description": {
+                    "type": "text"
+                },
+                "abstract": {
+                    "type": "text"
+                },
+                "infoboxes": {
+                    "type": "object",
+                    "enabled": false
+                },
+                "sections": {
+                    "type": "text"
+                }
+            }
+        }
+    }
+}
