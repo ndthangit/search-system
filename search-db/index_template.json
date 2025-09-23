@@ -11,38 +11,44 @@
             "translog.sync_interval": "30s",
             "merge.scheduler.max_thread_count": 1,
             "indexing.slowlog.threshold.index.warn": "10s",
-            "indexing.slowlog.threshold.index.info": "5s",
-            "indexing.slowlog.level": "info"
+            "indexing.slowlog.threshold.index.info": "5s"
         },
         "mappings": {
-            "dynamic": "strict",
-            "properties": {
-                "name": {
-                    "type": "text",
-                    "fields": {
-                        "keyword": {
-                            "type": "keyword"
-                        }
-                    }
-                },
-                "identifier": {
-                    "type": "keyword"
-                },
-                "description": {
-                    "type": "text"
-                },
-                "abstract": {
-                    "type": "text"
-                },
-                "infoboxes": {
-                    "type": "object",
-                    "enabled": false
-                },
-                "sections": {
-                    "type": "text"
-                }
+          "properties": {
+            "identifier": { "type": "keyword" },
+            "name": {
+              "type": "text",
+              "fields": { "keyword": { "type": "keyword" } }
+            },
+            "description": { "type": "text" },
+            "abstract": { "type": "text" },
+            "full_text": { "type": "text" },
+            "image": {
+              "properties": {
+                "content_url": { "type": "keyword" },
+                "width": { "type": "integer" },
+                "height": { "type": "integer" }
+              }
+            },
+            "categories": { "type": "keyword" },
+            "infobox": {
+              "type": "nested",
+              "properties": {
+                "name": { "type": "keyword" },
+                "value": { "type": "text" },
+                "type": { "type": "keyword" }
+              }
+            },
+            "date_modified": { "type": "date" },
+            "url": { "type": "keyword" },
+            "main_entity": {
+              "properties": {
+                "identifier": { "type": "keyword" },
+                "url": { "type": "keyword" }
+              }
             }
-        }
+          }
+      }
     }
 }
 
