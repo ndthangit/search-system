@@ -177,6 +177,27 @@ services:
       timeout: 10s
       retries: 120
 
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - 8001:8001
+    volumes:
+      - ./backend:/usr/src/app
+    depends_on:
+      es01:
+        condition: service_healthy
+    networks:
+      - search-system  # Thêm vào cùng network
+
+    env_file:
+      - .env
+    environment:
+      - ELASTIC_URL=https://es01:9200
+      - ELASTIC_USERNAME=elastic
+      - ELASTIC_PASSWORD=elastic
+
 networks:
   search-system:
     driver: bridge
