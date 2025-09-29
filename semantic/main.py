@@ -12,6 +12,6 @@ def check_elasticsearch():
     """Kiểm tra kết nối Elasticsearch"""
     return {"status": "connected"} if client.ping() else {"status": "failed"}
 
-@app.get("/hello/{name}")
-async def say_hello(name: str):
-    return {"message": f"Hello {name}"}
+@app.get("/search/{text}")
+async def say_hello(text: str):
+    return {"message": f"Hello {text}"}
