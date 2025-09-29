@@ -1,3 +1,5 @@
 .env
 config/ca.crt
 test_main.http
+.idea
+.vscode
