@@ -42,19 +42,19 @@
             "name_embedding": {
                     "type": "dense_vector",
                     "dims": 1024,
-                    "index": "True",
+                    "index": true,
                     "similarity": "cosine"
                 },
                 "abstract_embedding": {
                     "type": "dense_vector",
                     "dims": 1024,
-                    "index": "True",
+                    "index": true,
                     "similarity": "cosine"
                 },
                 "full_text_embedding": {
                     "type": "dense_vector",
                     "dims": 1024,
-                    "index": "True",
+                    "index": true,
                     "similarity": "cosine"
                 },
             "date_modified": { "type": "date" },

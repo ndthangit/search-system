@@ -177,9 +177,9 @@ services:
       timeout: 10s
       retries: 120
 
-  backend:
+  semantic:
     build:
-      context: ./backend
+      context: ./semantic
       dockerfile: Dockerfile
     ports:
       - 8001:8001
