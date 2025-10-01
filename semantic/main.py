@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException
-from typing import Optional
 from config.elastic import client
+from model.elastis_model import SearchResponse, Document, SearchRequest
 
 app = FastAPI()
 

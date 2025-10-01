@@ -39,6 +39,24 @@
                 "type": { "type": "keyword" }
               }
             },
+            "name_embedding": {
+                    "type": "dense_vector",
+                    "dims": 1024,
+                    "index": "True",
+                    "similarity": "cosine"
+                },
+                "abstract_embedding": {
+                    "type": "dense_vector",
+                    "dims": 1024,
+                    "index": "True",
+                    "similarity": "cosine"
+                },
+                "full_text_embedding": {
+                    "type": "dense_vector",
+                    "dims": 1024,
+                    "index": "True",
+                    "similarity": "cosine"
+                },
             "date_modified": { "type": "date" },
             "url": { "type": "keyword" },
             "main_entity": {
