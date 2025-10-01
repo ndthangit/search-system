@@ -181,11 +181,12 @@ services:
     # build:
     #   context: ./semantic
     #   dockerfile: Dockerfile
-    image: thangit67/semanticsearch:latest
+    image: thangit67/semanticsearch:1.2.0
     ports:
       - 8001:8001
     volumes:
       - certs:/usr/share/semantic/config/certs
+      - semanticdata:/usr/share/semantic/data
     depends_on:
       es01:
         condition: service_healthy
@@ -196,7 +197,7 @@ services:
       - ELASTIC_URL=https://es01:9200
       - ELASTIC_USERNAME=elastic
       - ELASTIC_PASSWORD=elastic
-      - ELASTICSEARCH_SSL_CERTIFICATEAUTHORITIES=config/certs/ca/ca.crt
+      - ELASTICSEARCH_SSL_CERTIFICATEAUTHORITIES=/usr/share/semantic/config/certs/ca/ca.crt
 
 networks:
   search-system:
@@ -208,4 +209,6 @@ volumes:
   esdata01:
     driver: local
   kibanadata:
+    driver: local
+  semanticdata:
     driver: local

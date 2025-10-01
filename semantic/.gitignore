@@ -3,3 +3,5 @@ config/ca.crt
 test_main.http
 .idea
 .vscode
+__pycache__/
+*.pyc

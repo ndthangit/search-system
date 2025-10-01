@@ -6,7 +6,7 @@ client = Elasticsearch(
     [settings.ELASTIC_URL],
     basic_auth=(settings.ELASTIC_USERNAME, settings.ELASTIC_PASSWORD),
     request_timeout=60,
-    ca_certs="config/ca.crt"
+    ca_certs=settings.ELASTICSEARCH_SSL_CERTIFICATEAUTHORITIES
 )
 
 # Kiểm tra kết nối khi khởi động
