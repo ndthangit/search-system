@@ -151,52 +151,52 @@ services:
       timeout: 10s
       retries: 120
 
-  kibana:
-    depends_on:
-      es01:
-        condition: service_healthy
-    image: docker.elastic.co/kibana/kibana:${STACK_VERSION}
-    networks:
-      - search-system
-    volumes:
-      - certs:/usr/share/kibana/config/certs
-      - kibanadata:/usr/share/kibana/data
-    ports:
-      - ${KIBANA_PORT}:5601
-    environment:
-      - SERVERNAME=kibana
-      - ELASTICSEARCH_HOSTS=https://es01:9200
-      - ELASTICSEARCH_USERNAME=kibana_system
-      - ELASTICSEARCH_PASSWORD=${KIBANA_PASSWORD}
-      - ELASTICSEARCH_SSL_CERTIFICATEAUTHORITIES=config/certs/ca/ca.crt
-      - NODE_OPTIONS=--max-old-space-size=512
-    mem_limit: 1g
-    healthcheck:
-      test: [ "CMD-SHELL", "curl -s -I http://localhost:5601 | grep -q 'HTTP/1.1 302 Found'" ]
-      interval: 10s
-      timeout: 10s
-      retries: 120
+  # kibana:
+  #   depends_on:
+  #     es01:
+  #       condition: service_healthy
+  #   image: docker.elastic.co/kibana/kibana:${STACK_VERSION}
+  #   networks:
+  #     - search-system
+  #   volumes:
+  #     - certs:/usr/share/kibana/config/certs
+  #     - kibanadata:/usr/share/kibana/data
+  #   ports:
+  #     - ${KIBANA_PORT}:5601
+  #   environment:
+  #     - SERVERNAME=kibana
+  #     - ELASTICSEARCH_HOSTS=https://es01:9200
+  #     - ELASTICSEARCH_USERNAME=kibana_system
+  #     - ELASTICSEARCH_PASSWORD=${KIBANA_PASSWORD}
+  #     - ELASTICSEARCH_SSL_CERTIFICATEAUTHORITIES=config/certs/ca/ca.crt
+  #     - NODE_OPTIONS=--max-old-space-size=512
+  #   mem_limit: 1g
+  #   healthcheck:
+  #     test: [ "CMD-SHELL", "curl -s -I http://localhost:5601 | grep -q 'HTTP/1.1 302 Found'" ]
+  #     interval: 10s
+  #     timeout: 10s
+  #     retries: 120
 
   semantic:
-    build:
-      context: ./semantic
-      dockerfile: Dockerfile
+    # build:
+    #   context: ./semantic
+    #   dockerfile: Dockerfile
+    image: thangit67/semanticsearch:latest
     ports:
       - 8001:8001
     volumes:
-      - ./backend:/usr/src/app
+      - certs:/usr/share/semantic/config/certs
     depends_on:
       es01:
         condition: service_healthy
     networks:
       - search-system  # Thêm vào cùng network
 
-    env_file:
-      - .env
     environment:
       - ELASTIC_URL=https://es01:9200
       - ELASTIC_USERNAME=elastic
       - ELASTIC_PASSWORD=elastic
+      - ELASTICSEARCH_SSL_CERTIFICATEAUTHORITIES=config/certs/ca/ca.crt
 
 networks:
   search-system:
