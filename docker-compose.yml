@@ -181,7 +181,7 @@ services:
     # build:
     #   context: ./semantic
     #   dockerfile: Dockerfile
-    image: thangit67/semanticsearch:1.2.0
+    image: thangit67/semanticsearch:1.3.0
     ports:
       - 8001:8001
     volumes:
