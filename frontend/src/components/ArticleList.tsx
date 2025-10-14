@@ -6,18 +6,12 @@ interface ArticleListProps {
     articles: Article[];
     loading: boolean;
     onArticleClick?: (article: Article) => void;
-    total?: number;
-    currentPage?: number;
-    onPageChange?: (page: number) => void;
 }
 
 const ArticleList: React.FC<ArticleListProps> = ({
     articles,
     loading,
     onArticleClick,
-    total,
-    currentPage = 1,
-    onPageChange,
 }) => {
     if (loading) {
         return (
@@ -33,7 +27,7 @@ const ArticleList: React.FC<ArticleListProps> = ({
             <div className="article-list empty">
                 <div className="empty-state">
                     <h3>No articles found</h3>
-                    <p>Try adjusting your search terms or browse all articles.</p>
+                    <p>Try searching for something else.</p>
                 </div>
             </div>
         );
@@ -41,43 +35,19 @@ const ArticleList: React.FC<ArticleListProps> = ({
 
     return (
         <div className="article-list">
-            {total && (
-                <div className="search-results-header">
-                    <p>Found {total} article{total !== 1 ? 's' : ''}</p>
-                </div>
-            )}
+            <div className="search-results-header">
+                <p>Found {articles.length} result{articles.length !== 1 ? 's' : ''}</p>
+            </div>
 
             <div className="articles-grid">
-                {articles.map((article) => (
+                {articles.map((article, index) => (
                     <ArticleCard
-                        key={article.id}
+                        key={index}
                         article={article}
                         onClick={onArticleClick}
                     />
                 ))}
             </div>
-
-            {onPageChange && total && total > 10 && (
-                <div className="pagination">
-                    <button
-                        onClick={() => onPageChange(currentPage - 1)}
-                        disabled={currentPage <= 1}
-                        className="pagination-button"
-                    >
-                        Previous
-                    </button>
-                    <span className="pagination-info">
-                        Page {currentPage} of {Math.ceil(total / 10)}
-                    </span>
-                    <button
-                        onClick={() => onPageChange(currentPage + 1)}
-                        disabled={currentPage >= Math.ceil(total / 10)}
-                        className="pagination-button"
-                    >
-                        Next
-                    </button>
-                </div>
-            )}
         </div>
     );
 };

@@ -35,7 +35,9 @@ api.interceptors.response.use(
 
 export const searchArticles = async (params: SearchParams): Promise<SearchResponse> => {
     try {
-        const response = await api.get('/api/articles/search', { params });
+        const response = await api.post(`/search`, {
+            text: params.query
+        });
         return response.data;
     } catch (error) {
         console.error('Error searching articles:', error);

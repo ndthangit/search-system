@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type {Article, SearchResponse} from './types/article';
+import type {Article} from './types/article';
 import { searchArticles } from './services/api';
 import SearchBar from './components/SearchBar';
 import ArticleList from './components/ArticleList';
@@ -12,13 +12,10 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [searchResults, setSearchResults] = useState<SearchResponse | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
 
   const handleSearch = async (query: string) => {
     if (!query.trim()) {
       setArticles([]);
-      setSearchResults(null);
       setError(null);
       return;
     }
@@ -29,15 +26,13 @@ function App() {
     try {
       const results = await searchArticles({
         query,
-        page: currentPage,
-        limit: 10,
       });
 
-      setArticles(results.articles);
-      setSearchResults(results);
+      setArticles(results.list_docs || []);
     } catch (err) {
       setError('Failed to search articles. Please check if the backend is running on localhost:8001');
       console.error('Search error:', err);
+      setArticles([]);
     } finally {
       setLoading(false);
     }
@@ -53,19 +48,11 @@ function App() {
     setSelectedArticle(null);
   };
 
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-    // Re-trigger search with new page
-    if (searchResults) {
-      handleSearch(searchResults.articles[0]?.title || '');
-    }
-  };
-
   return (
     <div className="app">
       <header className="app-header">
         <h1>Article Search System</h1>
-        <p>Search through articles using our intelligent search system</p>
+        <p>Search through Wikipedia articles using our intelligent search system</p>
       </header>
 
       <main className="app-main">
@@ -82,9 +69,6 @@ function App() {
           articles={articles}
           loading={loading}
           onArticleClick={handleArticleClick}
-          total={searchResults?.total}
-          currentPage={currentPage}
-          onPageChange={handlePageChange}
         />
       </main>
 

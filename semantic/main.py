@@ -7,6 +7,7 @@ import psutil
 import time
 from datetime import datetime
 import sys
+from fastapi.middleware.cors import CORSMiddleware
 
 # Load the model
 model = SentenceTransformer("Qwen/Qwen3-Embedding-0.6B")
@@ -62,6 +63,14 @@ def log_system_info():
 log_system_info()
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Request logging middleware
 @app.middleware("http")

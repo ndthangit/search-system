@@ -7,17 +7,9 @@ interface ArticleCardProps {
 }
 
 const ArticleCard: React.FC<ArticleCardProps> = ({ article, onClick }) => {
-    const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-        });
-    };
-
-    const truncateContent = (content: string, maxLength: number = 200) => {
-        if (content.length <= maxLength) return content;
-        return content.substring(0, maxLength) + '...';
+    const truncateAbstract = (abstract: string, maxLength: number = 200) => {
+        if (abstract.length <= maxLength) return abstract;
+        return abstract.substring(0, maxLength) + '...';
     };
 
     return (
@@ -26,30 +18,22 @@ const ArticleCard: React.FC<ArticleCardProps> = ({ article, onClick }) => {
             onClick={() => onClick?.(article)}
         >
             <div className="article-header">
-                <h3 className="article-title">{article.title}</h3>
-                <div className="article-meta">
-                    <span className="article-author">By {article.author}</span>
-                    <span className="article-date">{formatDate(article.publishedAt)}</span>
-                </div>
+                <h3 className="article-title">{article.name}</h3>
             </div>
 
-            {article.summary && (
-                <p className="article-summary">{article.summary}</p>
-            )}
-
-            <p className="article-content">
-                {truncateContent(article.content)}
+            <p className="article-abstract">
+                {truncateAbstract(article.abstract)}
             </p>
 
-            {article.tags && article.tags.length > 0 && (
-                <div className="article-tags">
-                    {article.tags.map((tag, index) => (
-                        <span key={index} className="tag">
-                            {tag}
-                        </span>
-                    ))}
-                </div>
-            )}
+            <a
+                href={article.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="article-link"
+                onClick={(e) => e.stopPropagation()}
+            >
+                Read more on Wikipedia →
+            </a>
         </div>
     );
 };
