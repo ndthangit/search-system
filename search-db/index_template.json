@@ -1,6 +1,6 @@
 {
     "index_patterns": [
-        "wikipedia-people*"
+        "articles*"
     ],
     "template": {
         "settings": {
@@ -14,60 +14,46 @@
             "indexing.slowlog.threshold.index.info": "5s"
         },
         "mappings": {
-          "properties": {
-            "identifier": { "type": "keyword" },
-            "name": {
-              "type": "text",
-              "fields": { "keyword": { "type": "keyword" } }
-            },
-            "description": { "type": "text" },
-            "abstract": { "type": "text" },
-            "full_text": { "type": "text" },
-            "image": {
-              "properties": {
-                "content_url": { "type": "keyword" },
-                "width": { "type": "integer" },
-                "height": { "type": "integer" }
-              }
-            },
-            "categories": { "type": "keyword" },
-            "infobox": {
-              "type": "nested",
-              "properties": {
-                "name": { "type": "keyword" },
-                "value": { "type": "text" },
-                "type": { "type": "keyword" }
-              }
-            },
-            "name_embedding": {
-                    "type": "dense_vector",
-                    "dims": 1024,
-                    "index": true,
-                    "similarity": "cosine"
+            "properties": {
+                "url": {
+                    "type": "keyword"
                 },
-                "abstract_embedding": {
-                    "type": "dense_vector",
-                    "dims": 1024,
-                    "index": true,
-                    "similarity": "cosine"
+                "title": {
+                    "type": "text",
+                    "fields": {
+                        "keyword": {
+                            "type": "keyword"
+                        }
+                    }
                 },
-                "full_text_embedding": {
-                    "type": "dense_vector",
-                    "dims": 1024,
-                    "index": true,
-                    "similarity": "cosine"
+                "summary": {
+                    "type": "text"
                 },
-            "date_modified": { "type": "date" },
-            "url": { "type": "keyword" },
-            "main_entity": {
-              "properties": {
-                "identifier": { "type": "keyword" },
-                "url": { "type": "keyword" }
-              }
+                "contents": {
+                    "type": "text"
+                },
+                "date": {
+                    "type": "date"
+                },
+                "authors": {
+                    "type": "keyword"
+                },
+                "category": {
+                    "type": "keyword"
+                },
+                "tags": {
+                    "type": "text",
+                    "fields": {
+                        "keyword": {
+                            "type": "keyword"
+                        }
+                    }
+                },
+                
+                  "date_modified": {
+                    "type": "date"
+                }
             }
-          }
-      }
+        }
     }
 }
-
-
