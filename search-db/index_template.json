@@ -48,10 +48,6 @@
                             "type": "keyword"
                         }
                     }
-                },
-                
-                  "date_modified": {
-                    "type": "date"
                 }
             }
         }
