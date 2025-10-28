@@ -43,6 +43,7 @@ services:
         echo "Setting kibana_system password";
         until curl -s -X POST --cacert config/certs/ca/ca.crt -u "elastic:${ELASTIC_PASSWORD}" -H "Content-Type: application/json" https://es01:9200/_security/user/kibana_system/_password -d "{\"password\":\"${KIBANA_PASSWORD}\"}" | grep -q "^{}"; do sleep 10; done;
         
+
         # Configure optimal settings for 20GB data with 8GB RAM
         echo "Configuring optimal settings for 20GB data with 8GB RAM";
         
@@ -77,7 +78,10 @@ services:
     depends_on:
       setup:
         condition: service_healthy
-    image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
+    # image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
+    build: 
+      context: elasticsearch
+      dockerfile: Dockerfile
     volumes:
       - certs:/usr/share/elasticsearch/config/certs
       - esdata01:/usr/share/elasticsearch/data
@@ -150,7 +154,26 @@ services:
       interval: 10s
       timeout: 10s
       retries: 120
-
+    # command: >
+    #   bash -c '
+    #     # Copy plugin file từ mounted volume sang /tmp và cài đặt
+    #     if [ -f "/usr/share/elasticsearch/plugins/elasticsearch-analysis-vietnamese-8.19.4.zip" ]; then
+    #       echo "Found plugin file, copying to /tmp...";
+    #       cp /usr/share/elasticsearch/plugins/elasticsearch-analysis-vietnamese-8.19.4.zip /tmp/plugin.zip;
+    #       echo "Installing Vietnamese analyzer plugin...";
+    #       /usr/share/elasticsearch/bin/elasticsearch-plugin install --batch file:///tmp/plugin.zip;
+    #       echo "Vietnamese analyzer plugin installed successfully";
+    #       # Clean up
+    #       rm -f /tmp/plugin.zip;
+    #     else
+    #       echo "Plugin file not found in plugins directory";
+    #       echo "Available files:";
+    #       ls -la /usr/share/elasticsearch/plugins/ || echo "Cannot list plugins directory";
+    #     fi;
+        
+    #     # Khởi động Elasticsearch
+    #     exec /usr/local/bin/docker-entrypoint.sh elasticsearch
+    #   '
   kibana:
     depends_on:
       es01:

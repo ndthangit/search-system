@@ -11,7 +11,27 @@
             "translog.sync_interval": "30s",
             "merge.scheduler.max_thread_count": 1,
             "indexing.slowlog.threshold.index.warn": "10s",
-            "indexing.slowlog.threshold.index.info": "5s"
+            "indexing.slowlog.threshold.index.info": "5s",
+            "analysis": {
+                "analyzer": {
+
+                    "nfd_normalized": {
+                        "tokenizer": "icu_tokenizer",
+                        "char_filter": [
+                            "nfd_normalizer"
+                        ]
+                    }
+                },
+                "char_filter": {
+                    "nfd_normalizer": {
+                        "type": "icu_normalizer",
+                        "name": "nfc",
+                        "mode": "decompose"
+                    }
+                }
+
+            }
+          }
         },
         "mappings": {
             "properties": {
@@ -19,12 +39,7 @@
                     "type": "keyword"
                 },
                 "title": {
-                    "type": "text",
-                    "fields": {
-                        "keyword": {
-                            "type": "keyword"
-                        }
-                    }
+                    "type": "text"
                 },
                 "summary": {
                     "type": "text"
@@ -36,7 +51,12 @@
                     "type": "date"
                 },
                 "authors": {
-                    "type": "keyword"
+                    "type": "text",
+                    "fields": {
+                        "keyword": {
+                            "type": "keyword"
+                        }
+                    }
                 },
                 "category": {
                     "type": "keyword"
