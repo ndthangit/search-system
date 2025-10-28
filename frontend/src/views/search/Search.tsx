@@ -1,9 +1,4 @@
 import { useState } from "react";
-import type { Article } from "./types/article";
-import { searchArticles } from "./services/api";
-import SearchBar from "./components/SearchBar";
-import ArticleList from "./components/ArticleList";
-import ArticleModal from "./components/ArticleModal";
 
 import {
     Container,
@@ -11,10 +6,14 @@ import {
     Box,
     Alert,
     CircularProgress,
-    Paper,
 } from "@mui/material";
+import type {Article} from "../../types/article.ts";
+import {searchArticles} from "../../services/api.ts";
+import ArticleModal from "../../components/ArticleModal.tsx";
+import ArticleList from "../../components/ArticleList.tsx";
+import SearchBar from "../../components/SearchBar.tsx";
 
-export default function App() {
+export default function Search() {
     const [articles, setArticles] = useState<Article[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -57,8 +56,7 @@ export default function App() {
 
     return (
         <Container maxWidth="md" sx={{ py: 4 }}>
-            <Paper
-                elevation={3}
+            <Box
                 sx={{
                     p: 3,
                     textAlign: "center",
@@ -72,7 +70,7 @@ export default function App() {
                 <Typography variant="subtitle1" color="text.secondary">
                     Search through Wikipedia articles using our intelligent search system
                 </Typography>
-            </Paper>
+            </Box>
 
             <Box sx={{ mb: 3 }}>
                 <SearchBar onSearch={handleSearch} loading={loading} />

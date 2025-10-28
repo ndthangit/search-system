@@ -5,7 +5,6 @@ from sentence_transformers import SentenceTransformer
 import logging
 import psutil
 import time
-from datetime import datetime
 import sys
 from fastapi.middleware.cors import CORSMiddleware
 

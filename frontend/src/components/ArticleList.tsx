@@ -1,6 +1,11 @@
-import React from 'react';
-import type {Article} from '../types/article';
-import ArticleCard from './ArticleCard';
+import type { Article } from "../types/article";
+import ArticleCard from "./ArticleCard";
+import {
+    Box,
+    Typography,
+    CircularProgress,
+} from "@mui/material";
+import Grid from "@mui/material/Grid";
 
 interface ArticleListProps {
     articles: Article[];
@@ -8,48 +13,57 @@ interface ArticleListProps {
     onArticleClick?: (article: Article) => void;
 }
 
-const ArticleList: React.FC<ArticleListProps> = ({
-    articles,
-    loading,
-    onArticleClick,
-}) => {
+export default function ArticleList({ articles, loading, onArticleClick }: ArticleListProps) {
     if (loading) {
         return (
-            <div className="article-list loading">
-                <div className="loading-spinner"></div>
-                <p>Searching articles...</p>
-            </div>
+            <Box
+                display="flex"
+                flexDirection="column"
+                alignItems="center"
+                justifyContent="center"
+                my={5}
+            >
+                <CircularProgress />
+                <Typography variant="body1" sx={{ mt: 2 }}>
+                    Searching articles...
+                </Typography>
+            </Box>
         );
     }
 
     if (articles.length === 0) {
         return (
-            <div className="article-list empty">
-                <div className="empty-state">
-                    <h3>No articles found</h3>
-                    <p>Try searching for something else.</p>
-                </div>
-            </div>
+            <Box
+                sx={{
+                    textAlign: "center",
+                    p: 4,
+                    borderRadius: 3,
+                    mt: 3,
+                }}
+            >
+                <Typography variant="h6" gutterBottom>
+                    No articles found
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                    Try searching for something else.
+                </Typography>
+            </Box>
         );
     }
 
     return (
-        <div className="article-list">
-            <div className="search-results-header">
-                <p>Found {articles.length} result{articles.length !== 1 ? 's' : ''}</p>
-            </div>
+        <Box mt={3}>
+            <Typography variant="subtitle1" color="text.secondary" mb={2}>
+                Found {articles.length} result{articles.length !== 1 ? "s" : ""}
+            </Typography>
 
-            <div className="articles-grid">
+            <Grid container spacing={2}>
                 {articles.map((article, index) => (
-                    <ArticleCard
-                        key={index}
-                        article={article}
-                        onClick={onArticleClick}
-                    />
+                    <Grid key={index} size={{ xs: 12, sm: 6, md: 4 }}>
+                        <ArticleCard article={article} onClick={onArticleClick} />
+                    </Grid>
                 ))}
-            </div>
-        </div>
+            </Grid>
+        </Box>
     );
-};
-
-export default ArticleList;
+}

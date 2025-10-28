@@ -1,14 +1,17 @@
-import React, { useState } from 'react';
+import {type ChangeEvent, type FormEvent, useState} from "react";
+import { TextField, Button, Box, InputAdornment, IconButton } from "@mui/material";
+import ClearIcon from '@mui/icons-material/Clear';
+import SearchIcon from '@mui/icons-material/Search';
 
 interface SearchBarProps {
     onSearch: (query: string) => void;
     loading: boolean;
 }
 
-const SearchBar: React.FC<SearchBarProps> = ({ onSearch, loading }) => {
-    const [query, setQuery] = useState('');
+export default function SearchBar({ onSearch, loading }: SearchBarProps) {
+    const [query, setQuery] = useState("");
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (query.trim()) {
             onSearch(query.trim());
@@ -16,42 +19,65 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch, loading }) => {
     };
 
     const handleClear = () => {
-        setQuery('');
-        onSearch('');
+        setQuery("");
+        onSearch("");
+    };
+
+    const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+        setQuery(e.target.value);
     };
 
     return (
-        <div className="search-bar">
-            <form onSubmit={handleSubmit} className="search-form">
-                <div className="search-input-container">
-                    <input
-                        type="text"
-                        value={query}
-                        onChange={(e) => setQuery(e.target.value)}
-                        placeholder="Search articles..."
-                        className="search-input"
-                        disabled={loading}
-                    />
-                    <button
-                        type="button"
-                        onClick={handleClear}
-                        className="clear-button"
-                        disabled={loading || !query}
-                        title="Clear search"
-                    >
-                        ✕
-                    </button>
-                </div>
-                <button
-                    type="submit"
-                    className="search-button"
-                    disabled={loading || !query.trim()}
-                >
-                    {loading ? 'Searching...' : 'Search'}
-                </button>
-            </form>
-        </div>
-    );
-};
+        <Box
+            component="form"
+            onSubmit={handleSubmit}
+            sx={{
+                display: "flex",
+                alignItems: "center",
+                p: 1.5,
+                borderRadius: 3,
+            }}
+        >
+            <TextField
+                fullWidth
+                value={query}
+                onChange={handleChange}
+                placeholder="Search articles..."
+                variant="outlined"
+                size="small"
+                disabled={loading}
+                InputProps={{
+                    startAdornment: (
+                        <InputAdornment position="start">
+                            <SearchIcon color="action" />
+                        </InputAdornment>
+                    ),
+                    endAdornment: query && (
+                        <InputAdornment position="end">
+                            <IconButton
+                                onClick={handleClear}
+                                disabled={loading}
+                                aria-label="clear search"
+                            >
+                                <ClearIcon />
+                            </IconButton>
+                        </InputAdornment>
+                    ),
+                }}
+            />
 
-export default SearchBar;
+            <Box sx={{ ml: 2 }}>
+                <Button
+                    type="submit"
+                    variant="contained"
+                    color="primary"
+                    disabled={loading || !query.trim()}
+                    startIcon={<SearchIcon />}
+                    sx={{ minWidth: 110 }}
+                >
+                    {loading ? "Searching..." : "Search"}
+                </Button>
+            </Box>
+        </Box>
+    );
+}
