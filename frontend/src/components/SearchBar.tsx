@@ -35,7 +35,6 @@ export default function SearchBar({ onSearch, loading }: SearchBarProps) {
                 display: "flex",
                 alignItems: "center",
                 p: 1.5,
-                borderRadius: 3,
             }}
         >
             <TextField

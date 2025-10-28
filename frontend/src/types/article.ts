@@ -9,5 +9,12 @@ export interface SearchResponse {
 }
 
 export interface SearchParams {
-    query: string;
+  query?: string;                // Text query đơn giản
+  index?: string;                // Tên index (vd: articles)
+  model?: "match" | "multi_match" | "bool" | "function_score" | "script_score";
+  dsl?: Record<string, any>;     // Cấu trúc truy vấn nâng cao (ES Query DSL)
+  rankProfile?: string;          // Tên profile xếp hạng tùy chỉnh
+  size?: number;                 // Số lượng kết quả trả về
+  from?: number;                 // Offset phân trang
+  sort?: Array<Record<string, any>>; // Mảng sort (vd: [{ "_score": "desc" }])
 }

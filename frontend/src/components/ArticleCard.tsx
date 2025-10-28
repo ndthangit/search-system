@@ -22,7 +22,6 @@ export default function ArticleCard({ article, onClick }: ArticleCardProps) {
         <Card
             elevation={3}
             sx={{
-                borderRadius: 3,
                 height: "100%",
                 display: "flex",
                 flexDirection: "column",

@@ -50,7 +50,7 @@ export default function Menu() {
                         component={NavLink}
                         to={item.path}
                         sx={{
-                            borderRadius: 2,
+                            borderRadius: 100,
                             mb: 1,
                             "&.active": {
                                 bgcolor: "action.selected",

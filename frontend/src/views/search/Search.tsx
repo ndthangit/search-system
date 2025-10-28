@@ -1,106 +1,181 @@
 import { useState } from "react";
-
 import {
-    Container,
-    Typography,
-    Box,
-    Alert,
-    CircularProgress,
+  Container,
+  Typography,
+  Box,
+  Alert,
+  CircularProgress,
+  Tabs,
+  Tab,
+  TextField,
+  Button,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Stack,
+  Paper,
 } from "@mui/material";
-import type {Article} from "../../types/article.ts";
-import {searchArticles} from "../../services/api.ts";
-import ArticleModal from "../../components/ArticleModal.tsx";
-import ArticleList from "../../components/ArticleList.tsx";
-import SearchBar from "../../components/SearchBar.tsx";
+import Editor from "@monaco-editor/react";
+import { useSearchArticles } from "./hooks/useSearchArticles";
+import type { Article, SearchParams } from "../../types/article";
+import ArticleList from "../../components/ArticleList";
+import ArticleModal from "../../components/ArticleModal";
 
 export default function Search() {
-    const [articles, setArticles] = useState<Article[]>([]);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
-    const [isModalOpen, setIsModalOpen] = useState(false);
+  const [tab, setTab] = useState(0);
+  const [params, setParams] = useState<SearchParams>({
+    query: "",
+    index: "articles",
+    model: "match",
+    size: 10,
+    dsl: {},
+  });
+  const [dslText, setDslText] = useState("{}");
+  const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-    const handleSearch = async (query: string) => {
-        if (!query.trim()) {
-            setArticles([]);
-            setError(null);
-            return;
-        }
+  const { data, error, isLoading, refetch } = useSearchArticles(params);
 
-        setLoading(true);
-        setError(null);
+  const handleSearch = () => {
+    // const finalParams =
+    //   tab === 1
+    //     ? { ...params, dsl: parseDSL(dslText) }
+    //     : { ...params, dsl: {}, model: "match" };
+    // setParams(finalParams);
+    refetch();
+  };
 
-        try {
-            const results = await searchArticles({ query });
-            setArticles(results.list_docs || []);
-        } catch (err) {
-            setError(
-                "Failed to search articles. Please check if the backend is running on localhost:8001"
-            );
-            console.error("Search error:", err);
-            setArticles([]);
-        } finally {
-            setLoading(false);
-        }
-    };
+  const handleArticleClick = (article: Article) => {
+    setSelectedArticle(article);
+    setIsModalOpen(true);
+  };
 
-    const handleArticleClick = (article: Article) => {
-        setSelectedArticle(article);
-        setIsModalOpen(true);
-    };
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedArticle(null);
+  };
 
-    const handleCloseModal = () => {
-        setIsModalOpen(false);
-        setSelectedArticle(null);
-    };
+  const articles = data?.list_docs || [];
 
-    return (
-        <Container maxWidth="md" sx={{ py: 4 }}>
-            <Box
-                sx={{
-                    p: 3,
-                    textAlign: "center",
-                    borderRadius: 3,
-                    mb: 4,
-                }}
+  return (
+    <Container maxWidth="md" sx={{ py: 4 }}>
+      <Typography variant="h4" textAlign="center" mb={3} fontWeight={600}>
+        Elasticsearch Query Console
+      </Typography>
+
+      <Paper sx={{ mb: 3, background: "rgba(34,27,51,0.85)", borderRadius: 2 }}>
+        <Tabs
+          value={tab}
+          onChange={(_, newValue) => setTab(newValue)}
+          textColor="primary"
+          indicatorColor="primary"
+          centered
+        >
+          <Tab label="Simple Search" />
+          <Tab label="Advanced Query" />
+        </Tabs>
+      </Paper>
+
+      {/* Simple Search */}
+      {tab === 0 && (
+        <Stack spacing={2}>
+          <TextField
+            label="Search text"
+            fullWidth
+            variant="outlined"
+            value={params.query}
+            onChange={(e) => setParams({ ...params, query: e.target.value })}
+          />
+          <Button
+            variant="contained"
+            onClick={handleSearch}
+            disabled={isLoading}
+          >
+            {isLoading ? "Searching..." : "Search"}
+          </Button>
+        </Stack>
+      )}
+
+      {/* Advanced Query */}
+      {tab === 1 && (
+        <Box sx={{ mt: 2 }}>
+          <FormControl fullWidth sx={{ mb: 2 }}>
+            <InputLabel>Model</InputLabel>
+            <Select
+              value={params.model}
+              label="Model"
+              onChange={(e) =>
+                setParams({ ...params, model: e.target.value as any })
+              }
             >
-                <Typography variant="h4" gutterBottom fontWeight={600}>
-                    Article Search System
-                </Typography>
-                <Typography variant="subtitle1" color="text.secondary">
-                    Search through Wikipedia articles using our intelligent search system
-                </Typography>
-            </Box>
+              <MenuItem value="match">Match</MenuItem>
+              <MenuItem value="multi_match">Multi Match</MenuItem>
+              <MenuItem value="bool">Bool</MenuItem>
+              <MenuItem value="function_score">Function Score</MenuItem>
+              <MenuItem value="script_score">Script Score</MenuItem>
+            </Select>
+          </FormControl>
 
-            <Box sx={{ mb: 3 }}>
-                <SearchBar onSearch={handleSearch} loading={loading} />
-            </Box>
+          <Editor
+            height="300px"
+            defaultLanguage="json"
+            theme="vs-dark"
+            value={dslText}
+            onChange={(value) => setDslText(value ?? "{}")}
+            options={{
+              minimap: { enabled: false },
+              fontSize: 14,
+              automaticLayout: true,
+              scrollbar: { vertical: "hidden" },
+            }}
+          />
 
-            {error && (
-                <Alert severity="error" sx={{ mb: 3 }}>
-                    {error}
-                </Alert>
-            )}
+          <Button
+            variant="contained"
+            fullWidth
+            sx={{ mt: 2 }}
+            onClick={handleSearch}
+            disabled={isLoading}
+          >
+            {isLoading ? "Running..." : "Run Query"}
+          </Button>
+        </Box>
+      )}
 
-            {loading && (
-                <Box display="flex" justifyContent="center" my={4}>
-                    <CircularProgress />
-                </Box>
-            )}
+      {error && (
+        <Alert severity="error" sx={{ mt: 3 }}>
+          Failed to search articles. Please check if backend is running.
+        </Alert>
+      )}
 
-            {!loading && (
-                <ArticleList
-                    articles={articles}
-                    loading={loading}
-                    onArticleClick={handleArticleClick}
-                />
-            )}
+      {isLoading && (
+        <Box textAlign="center" mt={3}>
+          <CircularProgress />
+        </Box>
+      )}
 
-            <ArticleModal
-                article={selectedArticle}
-                isOpen={isModalOpen}
-                onClose={handleCloseModal}
-            />
-        </Container>
-    );
+      {!isLoading && (
+        <ArticleList
+          articles={articles}
+          loading={isLoading}
+          onArticleClick={handleArticleClick}
+        />
+      )}
+
+      <ArticleModal
+        article={selectedArticle}
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+      />
+    </Container>
+  );
+}
+
+function parseDSL(str: string) {
+  try {
+    return JSON.parse(str);
+  } catch {
+    return {};
+  }
 }

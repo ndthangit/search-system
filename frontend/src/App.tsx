@@ -57,12 +57,10 @@ export default function App() {
 
     return (
         <Container maxWidth="md" sx={{ py: 4 }}>
-            <Paper
-                elevation={3}
+            <Box
                 sx={{
                     p: 3,
                     textAlign: "center",
-                    borderRadius: 3,
                     mb: 4,
                 }}
             >
@@ -72,7 +70,7 @@ export default function App() {
                 <Typography variant="subtitle1" color="text.secondary">
                     Search through Wikipedia articles using our intelligent search system
                 </Typography>
-            </Paper>
+            </Box>
 
             <Box sx={{ mb: 3 }}>
                 <SearchBar onSearch={handleSearch} loading={loading} />

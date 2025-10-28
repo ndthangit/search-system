@@ -37,7 +37,6 @@ export default function ArticleList({ articles, loading, onArticleClick }: Artic
                 sx={{
                     textAlign: "center",
                     p: 4,
-                    borderRadius: 3,
                     mt: 3,
                 }}
             >
