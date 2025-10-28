@@ -1,41 +1,75 @@
-import React from 'react';
-import type { Article } from '../types/article';
+import type { Article } from "../types/article";
+import {
+    Card,
+    CardActionArea,
+    CardContent,
+    Typography,
+    Link,
+} from "@mui/material";
 
 interface ArticleCardProps {
     article: Article;
     onClick?: (article: Article) => void;
 }
 
-const ArticleCard: React.FC<ArticleCardProps> = ({ article, onClick }) => {
-    const truncateAbstract = (abstract: string, maxLength: number = 200) => {
+export default function ArticleCard({ article, onClick }: ArticleCardProps) {
+    function truncateAbstract(abstract: string, maxLength: number = 200) {
         if (abstract.length <= maxLength) return abstract;
-        return abstract.substring(0, maxLength) + '...';
-    };
+        return abstract.substring(0, maxLength) + "...";
+    }
 
     return (
-        <div
-            className="article-card"
-            onClick={() => onClick?.(article)}
+        <Card
+            elevation={3}
+            sx={{
+                borderRadius: 3,
+                height: "100%",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "space-between",
+            }}
         >
-            <div className="article-header">
-                <h3 className="article-title">{article.name}</h3>
-            </div>
-
-            <p className="article-abstract">
-                {truncateAbstract(article.abstract)}
-            </p>
-
-            <a
-                href={article.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="article-link"
-                onClick={(e) => e.stopPropagation()}
+            <CardActionArea
+                onClick={() => onClick?.(article)}
+                sx={{ flexGrow: 1, p: 1.5 }}
             >
-                Read more on Wikipedia →
-            </a>
-        </div>
-    );
-};
+                <CardContent>
+                    <Typography
+                        variant="h6"
+                        component="div"
+                        gutterBottom
+                        sx={{
+                            fontWeight: 600,
+                            lineHeight: 1.3,
+                            mb: 1,
+                        }}
+                    >
+                        {article.name}
+                    </Typography>
 
-export default ArticleCard;
+                    <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{ mb: 2 }}
+                    >
+                        {truncateAbstract(article.abstract)}
+                    </Typography>
+                </CardContent>
+            </CardActionArea>
+
+            <CardContent sx={{ pt: 0 }}>
+                <Link
+                    href={article.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    underline="hover"
+                    color="primary"
+                    sx={{ fontWeight: 500 }}
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    Read more on Wikipedia →
+                </Link>
+            </CardContent>
+        </Card>
+    );
+}

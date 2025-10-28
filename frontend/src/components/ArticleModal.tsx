@@ -1,5 +1,15 @@
-import React from 'react';
-import type {Article} from '../types/article';
+import type { Article } from "../types/article";
+import {
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
+    Typography,
+    Button,
+    IconButton,
+} from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 
 interface ArticleModalProps {
     article: Article | null;
@@ -7,38 +17,56 @@ interface ArticleModalProps {
     onClose: () => void;
 }
 
-const ArticleModal: React.FC<ArticleModalProps> = ({ article, isOpen, onClose }) => {
-    if (!isOpen || !article) return null;
+export default function ArticleModal({ article, isOpen, onClose }: ArticleModalProps) {
+    if (!article) return null;
 
     return (
-        <div className="modal-overlay" onClick={onClose}>
-            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                <div className="modal-header">
-                    <h2 className="modal-title">{article.name}</h2>
-                    <button className="modal-close" onClick={onClose}>
-                        ✕
-                    </button>
-                </div>
+        <Dialog
+            open={isOpen}
+            onClose={onClose}
+            maxWidth="sm"
+            fullWidth
+            aria-labelledby="article-dialog-title"
+        >
+            {/* Header */}
+            <DialogTitle
+                id="article-dialog-title"
+                sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    fontWeight: 600,
+                    pr: 2,
+                }}
+            >
+                {article.name}
+                <IconButton onClick={onClose} aria-label="close">
+                    <CloseIcon />
+                </IconButton>
+            </DialogTitle>
 
-                <div className="modal-body">
-                    <div className="article-full-content">
-                        <p>{article.abstract}</p>
-                    </div>
+            {/* Body */}
+            <DialogContent dividers>
+                <Typography variant="body1" sx={{ whiteSpace: "pre-line" }}>
+                    {article.abstract || "No content available."}
+                </Typography>
+            </DialogContent>
 
-                    <div className="article-actions">
-                        <a
-                            href={article.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="btn-primary"
-                        >
-                            View Full Article on Wikipedia
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
+            {/* Footer / Actions */}
+            <DialogActions sx={{ p: 2 }}>
+                <Button onClick={onClose} color="inherit">
+                    Close
+                </Button>
+                <Button
+                    href={article.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    variant="contained"
+                    endIcon={<OpenInNewIcon />}
+                >
+                    View on Wikipedia
+                </Button>
+            </DialogActions>
+        </Dialog>
     );
-};
-
-export default ArticleModal;
+}
