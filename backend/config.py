@@ -42,3 +42,6 @@ class Config:
     API_TITLE = os.getenv('API_TITLE', 'Elastic Search API')
     API_DESCRIPTION = os.getenv('API_DESCRIPTION', 'Swagger for Elastic Search API')
     API_CONTACT_EMAIL = os.getenv('API_CONTACT_EMAIL', 'example@gmail.com')
+
+class ElasticSearchConfig:
+    HOST = os.getenv('ELASTICSEARCH_HOST', 'http://localhost:9200')
