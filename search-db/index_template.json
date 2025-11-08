@@ -7,32 +7,24 @@
             "number_of_shards": 1,
             "number_of_replicas": 0,
             "refresh_interval": "60s",
-            "translog": {
-                "durability": "async",
-                "sync_interval": "30s"
-            },
-            "merge": {
-                "scheduler": {
-                    "max_thread_count": 1
-                }
-            },
-            "indexing": {
-                "slowlog": {
-                    "threshold": {
-                        "index": {
-                            "warn": "10s",
-                            "info": "5s"
-                        }
-                    }
-                }
-            },
+            "translog.durability": "async",
+            "translog.sync_interval": "30s",
+            "merge.scheduler.max_thread_count": 1,
+            "indexing.slowlog.threshold.index.warn": "10s",
+            "indexing.slowlog.threshold.index.info": "5s",
             "analysis": {
                 "analyzer": {
+
                     "nfd_normalized": {
                         "tokenizer": "icu_tokenizer",
                         "char_filter": [
                             "nfd_normalizer"
                         ]
+                    },
+                    "vi_ngram_analyzer": {
+                      "type": "custom",
+                      "tokenizer": "vi_ngram_tokenizer",
+                      "filter": ["lowercase", "asciifolding"]
                     }
                 },
                 "char_filter": {
@@ -42,6 +34,7 @@
                         "mode": "decompose"
                     }
                 }
+
             }
         },
         "mappings": {
@@ -58,6 +51,7 @@
                 "contents": {
                     "type": "text"
                 },
+
                 "date": {
                     "type": "date"
                 },
