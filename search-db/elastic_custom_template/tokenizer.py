@@ -64,33 +64,33 @@ class TokenizerComponent:
 # --- Mẫu chạy thử (Dựa trên file tokenizer.py của bạn) ---
 
 # 1. Tạo instance tokenizer cụ thể
-vi_syllable_tokenizer = TokenizerNgram(
-    name="vi_syllable_tokenizer",
-    min_gram=2,
-    max_gram=3,
-    token_chars=["letter", "digit"]
-)
-
-# 2. Tạo TokenizerComponent
-tokenizer_component = TokenizerComponent()
-
-# 3. Thêm tokenizer vào component
-tokenizer_component.add_tokenizer(vi_syllable_tokenizer)
-
-# 4. Build từ điển cuối cùng
-built_tokenizers = tokenizer_component.build()
-
-# 5. Tạo lại cấu trúc template đầy đủ
-final_template = {
-    "template": {
-        "settings": {
-            "analysis": {
-                # Đặt kết quả build vào đúng vị trí
-                "tokenizer": built_tokenizers
-            }
-        }
-    }
-}
-
-# 6. In kết quả ra để so sánh
-print(json.dumps(final_template, indent=4, ensure_ascii=False))
+# vi_syllable_tokenizer = TokenizerNgram(
+#     name="vi_syllable_tokenizer",
+#     min_gram=2,
+#     max_gram=3,
+#     token_chars=["letter", "digit"]
+# )
+#
+# # 2. Tạo TokenizerComponent
+# tokenizer_component = TokenizerComponent()
+#
+# # 3. Thêm tokenizer vào component
+# tokenizer_component.add_tokenizer(vi_syllable_tokenizer)
+#
+# # 4. Build từ điển cuối cùng
+# built_tokenizers = tokenizer_component.build()
+#
+# # 5. Tạo lại cấu trúc template đầy đủ
+# final_template = {
+#     "template": {
+#         "settings": {
+#             "analysis": {
+#                 # Đặt kết quả build vào đúng vị trí
+#                 "tokenizer": built_tokenizers
+#             }
+#         }
+#     }
+# }
+#
+# # 6. In kết quả ra để so sánh
+# print(json.dumps(final_template, indent=4, ensure_ascii=False))

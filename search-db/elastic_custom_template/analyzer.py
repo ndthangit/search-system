@@ -82,40 +82,40 @@ class AnalyzerComponent:
 
 # 1. Tạo analyzer "nfd_normalized"
 #    (Loại custom này không có "type": "custom" tường minh)
-nfd_analyzer = AnalyzerCustom(
-    name="nfd_normalized",
-    tokenizer="icu_tokenizer"
-)
-nfd_analyzer.add_char_filters(["nfd_normalizer"])
-# Không gọi set_explicit_type()
-
-# 2. Tạo analyzer "vi_ngram_analyzer"
-#    (Loại custom này CÓ "type": "custom" tường minh)
-vi_ngram_analyzer = AnalyzerCustom(
-    name="vi_ngram_analyzer",
-    tokenizer="vi_ngram_tokenizer"
-)
-vi_ngram_analyzer.add_filters(["lowercase", "asciifolding"])
-vi_ngram_analyzer.set_explicit_type()  # Đánh dấu để thêm type
-
-# 3. Tạo AnalyzerComponent
-analyzer_component = AnalyzerComponent()
-
-# 4. Thêm các analyzer vào component
-analyzer_component.add_analyzer(nfd_analyzer)
-analyzer_component.add_analyzer(vi_ngram_analyzer)
-
-# 5. Build từ điển cuối cùng
-built_analyzers = analyzer_component.build()
-
-# 6. Tạo lại cấu trúc "analysis" (chỉ chứa phần analyzer)
-final_analysis_section = {
-    "analysis": {
-        "analyzer": built_analyzers
-        # Lưu ý: Các phần khác như char_filter, filter sẽ được
-        # build bởi các component tương ứng của chúng
-    }
-}
-
-# 7. In kết quả ra để so sánh
-print(json.dumps(final_analysis_section, indent=4, ensure_ascii=False))
+# nfd_analyzer = AnalyzerCustom(
+#     name="nfd_normalized",
+#     tokenizer="icu_tokenizer"
+# )
+# nfd_analyzer.add_char_filters(["nfd_normalizer"])
+# # Không gọi set_explicit_type()
+#
+# # 2. Tạo analyzer "vi_ngram_analyzer"
+# #    (Loại custom này CÓ "type": "custom" tường minh)
+# vi_ngram_analyzer = AnalyzerCustom(
+#     name="vi_ngram_analyzer",
+#     tokenizer="vi_ngram_tokenizer"
+# )
+# vi_ngram_analyzer.add_filters(["lowercase", "asciifolding"])
+# vi_ngram_analyzer.set_explicit_type()  # Đánh dấu để thêm type
+#
+# # 3. Tạo AnalyzerComponent
+# analyzer_component = AnalyzerComponent()
+#
+# # 4. Thêm các analyzer vào component
+# analyzer_component.add_analyzer(nfd_analyzer)
+# analyzer_component.add_analyzer(vi_ngram_analyzer)
+#
+# # 5. Build từ điển cuối cùng
+# built_analyzers = analyzer_component.build()
+#
+# # 6. Tạo lại cấu trúc "analysis" (chỉ chứa phần analyzer)
+# final_analysis_section = {
+#     "analysis": {
+#         "analyzer": built_analyzers
+#         # Lưu ý: Các phần khác như char_filter, filter sẽ được
+#         # build bởi các component tương ứng của chúng
+#     }
+# }
+#
+# # 7. In kết quả ra để so sánh
+# print(json.dumps(final_analysis_section, indent=4, ensure_ascii=False))

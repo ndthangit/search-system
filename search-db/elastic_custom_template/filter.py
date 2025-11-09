@@ -74,35 +74,35 @@ class FilterComponent:
 # (Trong thực tế, bạn sẽ bỏ comment phần đọc file ở đây)
 # with open('../data/stop_word.txt', 'r', encoding='utf-8') as file:
 #     words = [line.strip() for line in file if line.strip()]
-words = ["và", "là", "của", "trên", "tôi", "bạn"]  # Dùng list giả lập
-
-# 2. Tạo các instance filter cụ thể
-vi_stopwords = FilterStop(name="vi_stopwords", stopwords=words)
-vi_stemmer = FilterStemmer(name="vi_stemmer", language="minimal_english")
-vi_remove_duplicates = FilterUnique(name="vi_remove_duplicates")
-
-# 3. Tạo FilterComponent
-filter_component = FilterComponent()
-
-# 4. Thêm các filter vào component
-filter_component.add_filter(vi_stopwords)
-filter_component.add_filter(vi_stemmer)
-filter_component.add_filter(vi_remove_duplicates)
-
-# 5. Build từ điển cuối cùng
-built_filters = filter_component.build()
-
-# 6. Tạo lại cấu trúc template đầy đủ
-final_template = {
-    "template": {
-        "settings": {
-            "analysis": {
-                # Đặt kết quả build vào đúng vị trí
-                "filter": built_filters
-            }
-        }
-    }
-}
-
-# 7. In kết quả ra để so sánh
-print(json.dumps(final_template, indent=4, ensure_ascii=False))
+# words = ["và", "là", "của", "trên", "tôi", "bạn"]  # Dùng list giả lập
+#
+# # 2. Tạo các instance filter cụ thể
+# vi_stopwords = FilterStop(name="vi_stopwords", stopwords=words)
+# vi_stemmer = FilterStemmer(name="vi_stemmer", language="minimal_english")
+# vi_remove_duplicates = FilterUnique(name="vi_remove_duplicates")
+#
+# # 3. Tạo FilterComponent
+# filter_component = FilterComponent()
+#
+# # 4. Thêm các filter vào component
+# filter_component.add_filter(vi_stopwords)
+# filter_component.add_filter(vi_stemmer)
+# filter_component.add_filter(vi_remove_duplicates)
+#
+# # 5. Build từ điển cuối cùng
+# built_filters = filter_component.build()
+#
+# # 6. Tạo lại cấu trúc template đầy đủ
+# final_template = {
+#     "template": {
+#         "settings": {
+#             "analysis": {
+#                 # Đặt kết quả build vào đúng vị trí
+#                 "filter": built_filters
+#             }
+#         }
+#     }
+# }
+#
+# # 7. In kết quả ra để so sánh
+# print(json.dumps(final_template, indent=4, ensure_ascii=False))
