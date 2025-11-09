@@ -7,36 +7,21 @@ from typing import Literal, List
 class Filter:
     """Lớp cơ sở cho tất cả các loại filter."""
 
-    def __init__(self, type: Literal["stop", "stemmer", "unique", "synonym", "length"]):
-        # Mở rộng Literal để bao gồm các loại phổ biến khác nếu cần
-        self.name = ""
+    def __init__(self, type: Literal["stop", "stemmer", "unique", "synonym", "length","asciifolding","lowercase"]):
         self.type = type
+        self.name = type
 
 
-class FilterStop(Filter):
-    """Định nghĩa cho 'stop' filter."""
 
+class FilterCustom(Filter):
+    def __init__(self, name: str, type: Literal["stop", "stemmer", "unique", "synonym", "length", "asciifolding"]):
+        super().__init__(type=type)
+        self.name = name
+
+class FilterStop(FilterCustom):
     def __init__(self, name: str, stopwords: List[str]):
-        super().__init__(type="stop")
-        self.name = name
+        super().__init__(name=name, type="stop")
         self.stopwords = stopwords
-
-
-class FilterStemmer(Filter):
-    """Định nghĩa cho 'stemmer' filter."""
-
-    def __init__(self, name: str, language: str):
-        super().__init__(type="stemmer")
-        self.name = name
-        self.language = language
-
-
-class FilterUnique(Filter):
-    """Định nghĩa cho 'unique' filter."""
-
-    def __init__(self, name: str):
-        super().__init__(type="unique")
-        self.name = name
 
 
 class FilterComponent:
@@ -54,16 +39,16 @@ class FilterComponent:
         filter_dict = {}
         for f in self.filters:
             # Tạo entry cơ bản
-            config = {"type": f.type}
+            if isinstance(f, FilterCustom):
+                config = {"type": f.type}
 
-            # Thêm các thuộc tính cụ thể cho từng loại
-            if f.type == "stop":
-                config["stopwords"] = getattr(f, 'stopwords', [])
-            elif f.type == "stemmer":
-                config["language"] = getattr(f, 'language', 'english')
-            # FilterUnique không cần thuộc tính gì thêm
+                # Thêm các thuộc tính cụ thể cho từng loại
+                if f.type == "stop":
+                    config["stopwords"] = getattr(f, 'stopwords', [])
 
-            filter_dict[f.name] = config
+                # FilterUnique không cần thuộc tính gì thêm
+
+                filter_dict[getattr(f, 'name', f.type)] = config
 
         return filter_dict
 

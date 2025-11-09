@@ -91,7 +91,8 @@
                 "max_gram": 3,
                 "token_chars": [
                     "letter",
-                    "digit"
+                    "digit",
+                    "whitespace"
                 ]
             }
         },
@@ -100,7 +101,11 @@
                 "type": "custom",
                 "tokenizer": "vi_ngram_tokenizer",
                 "char_filter": [],
-                "filter": []
+                "filter": [
+                    "vi_stopwords",
+                    "lowercase",
+                    "asciifolding"
+                ]
             }
         }
     }

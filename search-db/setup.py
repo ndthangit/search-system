@@ -3,9 +3,9 @@ import json
 from elasticsearch import Elasticsearch
 
 from elastic_custom_template.analysis import AnalysisComponent
-from elastic_custom_template.analyzer import AnalyzerComponent, AnalyzerCustom
-from elastic_custom_template.filter import FilterStop, FilterComponent
-from elastic_custom_template.tokenizer import TokenizerComponent, Tokenizer, TokenizerNgram
+from elastic_custom_template.analyzer import  AnalyzerCustom
+from elastic_custom_template.filter import FilterStop, FilterComponent, Filter
+from elastic_custom_template.tokenizer import TokenizerNgram
 
 client = Elasticsearch(
     hosts=["https://localhost:9200"],  # Địa chỉ Elasticsearch
@@ -35,18 +35,19 @@ vi_ngram_tokenizer = TokenizerNgram(
     name="vi_ngram_tokenizer",
     min_gram=2,
     max_gram=3,
-    token_chars=["letter", "digit"]
+    token_chars=["letter","digit","whitespace"]
 )
-
 
 analysis_settings = AnalysisComponent()
 
 analysis_settings.filter_component.add_filter(vi_stopwords)
-
 analysis_settings.tokenizer_component.add_tokenizer(vi_ngram_tokenizer)
 
 analyzer = AnalyzerCustom(name="analyzer-vi-ngram")
 analyzer.set_tokenizer(vi_ngram_tokenizer)
+analyzer.add_filter(vi_stopwords)
+analyzer.add_filter(Filter(type="lowercase"))
+analyzer.add_filter(Filter(type="asciifolding"))
 
 analysis_settings.analyzer_component.add_analyzer(analyzer)
 
@@ -55,12 +56,8 @@ print(analysis_settings.build())
 json.dump(analysis_settings.build(), open('sample_analysis.json', 'w', encoding='utf-8'), indent=4)
 
 
-
-
-
 index_template = {
     "index_patterns": ["articles*"],
-
 
     "template": {
         "settings": {
@@ -72,7 +69,7 @@ index_template = {
             "merge.scheduler.max_thread_count": 1,
             "indexing.slowlog.threshold.index.warn": "10s",
             "indexing.slowlog.threshold.index.info": "5s",
-            "analysis":analysis_settings.build()
+            "analysis":analysis_settings.build()["analysis"]
         },
         "mappings": {
             "properties": {
