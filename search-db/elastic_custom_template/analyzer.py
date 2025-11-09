@@ -1,5 +1,8 @@
-import json
-from typing import Literal, List, Optional
+from typing import List, Union
+
+from elastic_custom_template.char_filter import CharFilter
+from elastic_custom_template.filter import Filter
+from elastic_custom_template.tokenizer import Tokenizer
 
 
 # --- Định nghĩa các class cho Analyzer ---
@@ -11,31 +14,69 @@ class Analyzer:
         self.name = ""
         self.type = type
 
+    def build(self) -> dict:
+        """Phương thức trừu tượng cần được triển khai bởi lớp con."""
+        raise NotImplementedError("Subclasses must implement build() method")
+
 
 class AnalyzerCustom(Analyzer):
-    """Định nghĩa cho 'custom' analyzer."""
+    """
+    Định nghĩa cho 'custom' analyzer, đã được tối ưu.
 
-    def __init__(self, name: str, tokenizer: str):
+    Sử dụng 'builder pattern' (phương thức trả về self)
+    để dễ dàng 'chain' (nối) các lệnh.
+    """
+
+    def __init__(self,
+                 name: str,
+                 tokenizer: Tokenizer = None,
+                 char_filters: List[Union[CharFilter, str]] = None,
+                 filters: List[Union[Filter, str]] = None):
+        # 1. Loại bỏ tham số 'name' không được sử dụng
         super().__init__(type="custom")
+
         self.name = name
         self.tokenizer = tokenizer
-        self.char_filters: List[str] = []
-        self.filters: List[str] = []
-        # Cờ để quyết định có thêm "type": "custom" vào JSON hay không
-        self.explicit_type = False
+        self.char_filters = char_filters or []
+        self.filters = filters or []
 
-    def add_char_filters(self, char_filter_names: List[str]):
-        """Thêm một danh sách tên char_filter."""
-        self.char_filters.extend(char_filter_names)
+    def set_tokenizer(self, tokenizer: Tokenizer):
+        """Gán (hoặc ghi đè) tokenizer."""
+        self.tokenizer = tokenizer
+        return self  # 3. Trả về 'self' để cho phép 'chaining'
 
-    def add_filters(self, filter_names: List[str]):
-        """Thêm một danh sách tên filter."""
-        self.filters.extend(filter_names)
+    def add_char_filter(self, char_filter: Union[CharFilter, str]):
+        """
+        Thêm MỘT char_filter vào danh sách.
+        Đổi tên từ 'add_char_filters' (số nhiều) thành 'add_char_filter' (số ít)
+        để phản ánh đúng hành vi.
+        """
+        self.char_filters.append(char_filter)
+        return self
 
-    def set_explicit_type(self):
-        """Đánh dấu để thêm 'type: "custom"' khi build."""
-        self.explicit_type = True
+    def add_filter(self, new_filter: Union[Filter, str]):
+        """
+        Thêm MỘT filter vào danh sách.
 
+        SỬA LỖI: self.filters.append(new_filter) thay vì self.filters.append(Filter).
+        ĐỔI TÊN: Đổi tên tham số 'filter' thành 'new_filter' để tránh
+                 trùng lặp với hàm 'filter' built-in của Python.
+        """
+        # 4. SỬA LỖI quan trọng: Dùng biến 'new_filter', không phải class 'Filter'
+        self.filters.append(new_filter)
+        return self
+
+    def build(self):
+        """Xây dựng và trả về từ điển cấu hình analyzer."""
+        config = {self.name: {
+                "type": self.type,
+                "tokenizer": self.tokenizer.name if self.tokenizer else None,
+                "char_filter": [cf.name if isinstance(cf, CharFilter) else cf for cf in self.char_filters],
+                "filter": [f.name if isinstance(f, Filter) else f for f in self.filters]
+            }
+        }
+
+        return {k: v for k, v in config.items() if v}
 
 class AnalyzerComponent:
     """Lớp quản lý và xây dựng từ điển 'analyzer'."""
@@ -51,30 +92,8 @@ class AnalyzerComponent:
         """Xây dựng từ điển 'analyzer' cuối cùng."""
         analyzer_dict = {}
         for a in self.analyzers:
-            if a.type == "custom":
-                # Đảm bảo đây là instance AnalyzerCustom
-                if not isinstance(a, AnalyzerCustom):
-                    continue
-
-                config = {
-                    "tokenizer": a.tokenizer
-                }
-
-                # Chỉ thêm "type": "custom" nếu được đánh dấu
-                if a.explicit_type:
-                    config["type"] = "custom"
-
-                # Chỉ thêm các trường nếu chúng không rỗng
-                if a.char_filters:
-                    config["char_filter"] = a.char_filters
-
-                if a.filters:
-                    config["filter"] = a.filters
-
-                analyzer_dict[a.name] = config
-
-            # (Bạn có thể thêm logic cho các loại analyzer khác ở đây)
-
+            # Sử dụng phương thức build() của từng analyzer để lấy cấu hình
+            analyzer_dict.update(a.build())
         return analyzer_dict
 
 

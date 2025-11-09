@@ -11,6 +11,9 @@ class Tokenizer:
         # Mở rộng Literal để bao gồm các loại phổ biến khác
         self.name = ""
         self.type = type
+    def build(self) -> dict:
+        """Phương thức trừu tượng cần được triển khai bởi lớp con."""
+        raise NotImplementedError("Subclasses must implement build() method")
 
 
 class TokenizerNgram(Tokenizer):
@@ -22,6 +25,16 @@ class TokenizerNgram(Tokenizer):
         self.min_gram = min_gram
         self.max_gram = max_gram
         self.token_chars = token_chars
+    def build(self) -> dict:
+        """Xây dựng từ điển cấu hình cho ngram tokenizer."""
+        return { self.name: {
+                "type": self.type,
+                "min_gram": self.min_gram,
+                "max_gram": self.max_gram,
+                "token_chars": self.token_chars
+            }
+
+        }
 
 
 # Bạn có thể thêm các class Tokenizer khác ở đây (ví dụ: TokenizerPattern)
