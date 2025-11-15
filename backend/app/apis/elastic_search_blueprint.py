@@ -50,10 +50,6 @@ async def ping(_):
 #     return json(res.body)
 
 
-
-INDEX_NAME = "articles"
-
-
 @bp.post("/save-document/<index_name:str>")
 @openapi.summary("Index document into Elasticsearch")
 @openapi.description("Add or update a document in the 'articles' index.")
