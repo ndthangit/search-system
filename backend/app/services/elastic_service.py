@@ -17,10 +17,14 @@ class ElasticService:
         body = {
             "query": {
                 "match": {
-                    "content": query
+                    "contents": query
                 }
             }
         }
+        return await self.client.search(index=index, body=body)
+
+    async def search_match(self, index: str, body: dict):
+        """Search với body tùy chỉnh, hỗ trợ multi-match."""
         return await self.client.search(index=index, body=body)
 
     async def analyze_text(self, index, text, field):

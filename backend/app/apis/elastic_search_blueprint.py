@@ -87,6 +87,57 @@ async def analyze_text(request):
     res = await es_service.analyze_text("test-index", text, field)
     return json(res.body)
 
+
+
+INDEX_NAME = "articles"
+
+
+@bp.post("/index")
+@openapi.summary("Index document into Elasticsearch")
+@openapi.description("Add or update a document in the 'articles' index.")
+@openapi.body(
+    {
+        "application/json": {
+            "id": str,
+            "url": str,
+            "title": str,
+            "summary": str,
+            "contents": str,
+            "date": str,           # ISO8601
+            "authors": [str],
+            "category": str,
+            "tags": [str]
+        }
+    },
+    required=True,
+    description="Document to be indexed"
+)
+@openapi.response(200, {"application/json": {"result": str}}, "Index result")
+async def index_data(request):
+    data = request.json
+    doc_id = data.get("id")
+    if not doc_id:
+        return json({"error": "Missing 'id'"}, status=400)
+
+    # Lấy nội dung chính
+    contents = data.get("contents", "")
+
+    # Chuẩn body index document
+    body = {
+        "url": data.get("url"),
+        "title": data.get("title"),
+        "summary": data.get("summary"),
+        "contents": contents,
+        "date": data.get("date"),
+        "authors": data.get("authors", []),
+        "category": data.get("category"),
+        "tags": data.get("tags", []),
+    }
+
+    res = await es_service.index_data(INDEX_NAME, doc_id, body)
+    return json(res.body)
+
+
 @bp.post("/search-match/<index_name:str>")
 @openapi.summary("Search documents with match query")
 @openapi.description("Search documents using a multi-match query on the fields.")
@@ -114,7 +165,7 @@ async def search_match(request, index_name: str):
         "size": body.size
     }
 
-    res = await es_service.client.search(index=index_name, body=query)
+    res = await es_service.client.search_match(index=index_name, body=query)
     hits = res['hits']['hits']
     total_elements = res['hits']['total']['value']
     total_pages = (total_elements + body.size - 1) // body.size
