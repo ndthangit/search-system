@@ -2,6 +2,8 @@ from sanic import Blueprint
 from sanic.response import json
 from sanic_ext import openapi
 from app.services.elastic_service import ElasticService
+from app.dto.request.multi_match_search_request import MultiMatchSearchRequest
+from app.dto.response.search_response import SearchResponse
 
 bp = Blueprint("elastic_search", url_prefix="/elastic_search")
 
@@ -84,3 +86,45 @@ async def analyze_text(request):
     # Gọi ElasticService
     res = await es_service.analyze_text("test-index", text, field)
     return json(res.body)
+
+@bp.post("/search-match/<index_name:str>")
+@openapi.summary("Search documents with match query")
+@openapi.description("Search documents using a multi-match query on the fields.")
+@openapi.body(
+    {"application/json": MultiMatchSearchRequest},
+    required=True,
+    description="Multi-match search request payload"
+)
+@openapi.response(200, {"application/json": SearchResponse}, "Search results")
+async def search_match(request, index_name: str):
+    """
+    Tìm kiếm tài liệu sử dụng multi-match query trên các field được chỉ định.
+    """
+    data = request.json
+    body = MultiMatchSearchRequest(**data) 
+
+    query = {
+        "query": {
+            "multi_match": {
+                "query": body.query,
+                "fields": body.fields
+            }
+        },
+        "from": (body.page - 1) * body.size,
+        "size": body.size
+    }
+
+    res = await es_service.client.search(index=index_name, body=query)
+    hits = res['hits']['hits']
+    total_elements = res['hits']['total']['value']
+    total_pages = (total_elements + body.size - 1) // body.size
+
+    response = SearchResponse(
+        pageNumber=body.page,
+        pageSize=body.size,
+        totalElements=total_elements,
+        totalPages=total_pages,
+        data=[hit for hit in hits]
+    )
+
+    return json(response.dict())
