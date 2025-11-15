@@ -4,6 +4,8 @@ from sanic_ext import openapi
 from app.services.elastic_service import ElasticService
 from app.dto.request.multi_match_search_request import MultiMatchSearchRequest
 from app.dto.response.search_response import SearchResponse
+from app.dto.response.hit_response import HitResponse
+from app.dto.response.document_dto import DocumentDto
 
 bp = Blueprint("elastic_search", url_prefix="/elastic_search")
 
@@ -18,81 +20,41 @@ async def ping(_):
     ok = await es_service.ping()
     return json({"status": "ok" if ok else "error"})
 
+# @bp.post("/analyze")
+# @openapi.summary("Analyze text")
+# @openapi.description("Check how Elasticsearch tokenizes (splits) the input text.")
+# @openapi.body(
+#     {
+#         "application/json": {
+#             "text": str,
+#             "field": str,
+#         }
+#     },
+#     required=True,
+#     description="Text and optional field name to analyze"
+# )
+# @openapi.response(200, {"application/json": {"tokens": list}}, "Tokenization result")
+# async def analyze_text(request):
+#     """
+#     Gửi text tới Elasticsearch để xem nó tách từ (tokenize) thế nào.
+#     """
+#     data = request.json
+#     text = data.get("text")
+#     field = data.get("field", "content")
 
-@bp.post("/index")
-@openapi.summary("Index document into Elasticsearch")
-@openapi.description("Add or update a document in the `test-index`.")
-@openapi.body(
-    {
-        "application/json": {
-            "id": str,
-            "title": str,
-            "content": str,
-            "author": str,
-            "tags": [str],
-        }
-    },
-    required=True,
-    description="Document to be indexed"
-)
-@openapi.response(200, {"application/json": {"result": str}}, "Index result")
-async def index_data(request):
-    data = request.json
-    res = await es_service.index_data("test-index", data.get("id"), data)
-    return json(res.body)
+#     if not text:
+#         return json({"error": "Missing 'text' in request body"}, status=400)
 
-
-@bp.get("/search")
-@openapi.summary("Search documents")
-@openapi.description("Search documents in `test-index` using a query string.")
-@openapi.parameter(
-    name="q",
-    description="Search query (matches against `content` field)",
-    required=True,
-    location="query",
-    schema=str
-)
-@openapi.response(200, {"application/json": {"hits": list}}, "Search results")
-async def search(request):
-    query = request.args.get("q", "")
-    res = await es_service.search("test-index", query)
-    return json(res.body)
-
-@bp.post("/analyze")
-@openapi.summary("Analyze text")
-@openapi.description("Check how Elasticsearch tokenizes (splits) the input text.")
-@openapi.body(
-    {
-        "application/json": {
-            "text": str,
-            "field": str,
-        }
-    },
-    required=True,
-    description="Text and optional field name to analyze"
-)
-@openapi.response(200, {"application/json": {"tokens": list}}, "Tokenization result")
-async def analyze_text(request):
-    """
-    Gửi text tới Elasticsearch để xem nó tách từ (tokenize) thế nào.
-    """
-    data = request.json
-    text = data.get("text")
-    field = data.get("field", "content")
-
-    if not text:
-        return json({"error": "Missing 'text' in request body"}, status=400)
-
-    # Gọi ElasticService
-    res = await es_service.analyze_text("test-index", text, field)
-    return json(res.body)
+#     # Gọi ElasticService
+#     res = await es_service.analyze_text("test-index", text, field)
+#     return json(res.body)
 
 
 
 INDEX_NAME = "articles"
 
 
-@bp.post("/index")
+@bp.post("/save-document/<index_name:str>")
 @openapi.summary("Index document into Elasticsearch")
 @openapi.description("Add or update a document in the 'articles' index.")
 @openapi.body(
@@ -113,28 +75,21 @@ INDEX_NAME = "articles"
     description="Document to be indexed"
 )
 @openapi.response(200, {"application/json": {"result": str}}, "Index result")
-async def index_data(request):
+async def index_data(request, index_name: str):
     data = request.json
-    doc_id = data.get("id")
-    if not doc_id:
-        return json({"error": "Missing 'id'"}, status=400)
 
-    # Lấy nội dung chính
-    contents = data.get("contents", "")
-
-    # Chuẩn body index document
     body = {
         "url": data.get("url"),
         "title": data.get("title"),
         "summary": data.get("summary"),
-        "contents": contents,
+        "contents": data.get("contents"),
         "date": data.get("date"),
         "authors": data.get("authors", []),
         "category": data.get("category"),
         "tags": data.get("tags", []),
     }
 
-    res = await es_service.index_data(INDEX_NAME, doc_id, body)
+    res = await es_service.index_data(index_name, data.get("id"), body)
     return json(res.body)
 
 
@@ -165,17 +120,29 @@ async def search_match(request, index_name: str):
         "size": body.size
     }
 
-    res = await es_service.client.search_match(index=index_name, body=query)
+    res = await es_service.search_match(index_name, query)
     hits = res['hits']['hits']
     total_elements = res['hits']['total']['value']
     total_pages = (total_elements + body.size - 1) // body.size
+    took = res['took']
+    max_score = res['hits'].get('max_score')
 
     response = SearchResponse(
         pageNumber=body.page,
         pageSize=body.size,
         totalElements=total_elements,
         totalPages=total_pages,
-        data=[hit for hit in hits]
+        took=took,
+        maxScore=max_score,
+        data=[
+            HitResponse(
+                index=hit["_index"],
+                id=hit["_id"],
+                score=hit.get("_score"),
+                source=DocumentDto(**hit["_source"])
+            )
+            for hit in hits
+        ]
     )
 
     return json(response.dict())
