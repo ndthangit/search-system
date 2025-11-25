@@ -82,6 +82,30 @@
                     "v\u1edbi",
                     "v\u1eeba"
                 ]
+            },
+            "vi_dictionary_decompounder": {
+                "type": "dictionary_decompounder",
+                "word_list": [
+                    "x\u00e3 h\u1ed9i",
+                    "c\u1ed9ng h\u00f2a",
+                    "ch\u1ee7 ngh\u0129a",
+                    "c\u00e1nh \u0111\u1ed3ng",
+                    "nh\u00e0 n\u01b0\u1edbc",
+                    "th\u00e0nh ph\u1ed1",
+                    "b\u00e1c s\u0129",
+                    "k\u1ef9 s\u01b0",
+                    "gi\u00e1o vi\u00ean",
+                    "h\u1ecdc sinh",
+                    "sinh vi\u00ean",
+                    "c\u00f4ng nh\u00e2n",
+                    "n\u00f4ng th\u00f4n",
+                    "\u0111\u00f4 th\u1ecb",
+                    "qu\u00e2n \u0111\u1ed9i",
+                    "c\u00f4ng an",
+                    "y t\u1ebf",
+                    "gi\u00e1o d\u1ee5c",
+                    "v\u0103n h\u00f3a"
+                ]
             }
         },
         "tokenizer": {
@@ -104,7 +128,8 @@
                 "filter": [
                     "vi_stopwords",
                     "lowercase",
-                    "asciifolding"
+                    "asciifolding",
+                    "vi_dictionary_decompounder"
                 ]
             }
         }

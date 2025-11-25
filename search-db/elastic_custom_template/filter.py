@@ -7,14 +7,14 @@ from typing import Literal, List
 class Filter:
     """Lớp cơ sở cho tất cả các loại filter."""
 
-    def __init__(self, type: Literal["stop", "stemmer", "unique", "synonym", "length","asciifolding","lowercase"]):
+    def __init__(self, type: Literal["stop", "stemmer", "unique", "synonym", "length","asciifolding","lowercase","dictionary_decompounder"]):
         self.type = type
         self.name = type
 
 
 
 class FilterCustom(Filter):
-    def __init__(self, name: str, type: Literal["stop", "stemmer", "unique", "synonym", "length", "asciifolding"]):
+    def __init__(self, name: str, type: Literal["stop", "stemmer", "unique", "synonym", "length", "asciifolding","dictionary_decompounder"]):
         super().__init__(type=type)
         self.name = name
 
@@ -22,6 +22,12 @@ class FilterStop(FilterCustom):
     def __init__(self, name: str, stopwords: List[str]):
         super().__init__(name=name, type="stop")
         self.stopwords = stopwords
+
+class FilterDictionaryDecompounder(FilterCustom):
+    def __init__(self, name: str, word_list: list[str]):
+        super().__init__(name=name, type="dictionary_decompounder")
+        self.word_list = word_list
+
 
 
 class FilterComponent:
@@ -45,6 +51,8 @@ class FilterComponent:
                 # Thêm các thuộc tính cụ thể cho từng loại
                 if f.type == "stop":
                     config["stopwords"] = getattr(f, 'stopwords', [])
+                elif f.type == "dictionary_decompounder":
+                    config["word_list"] = getattr(f, 'word_list', [])
 
                 # FilterUnique không cần thuộc tính gì thêm
 

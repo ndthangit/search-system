@@ -4,7 +4,7 @@ from elasticsearch import Elasticsearch
 
 from elastic_custom_template.analysis import AnalysisComponent
 from elastic_custom_template.analyzer import  AnalyzerCustom
-from elastic_custom_template.filter import FilterStop, FilterComponent, Filter
+from elastic_custom_template.filter import FilterStop, FilterComponent, Filter, FilterDictionaryDecompounder
 from elastic_custom_template.tokenizer import TokenizerNgram
 
 client = Elasticsearch(
@@ -41,6 +41,31 @@ vi_ngram_tokenizer = TokenizerNgram(
 analysis_settings = AnalysisComponent()
 
 analysis_settings.filter_component.add_filter(vi_stopwords)
+
+vi_dictionary_decompounder= FilterDictionaryDecompounder(name="vi_dictionary_decompounder",word_list=[
+          "xã hội",
+          "cộng hòa",
+          "chủ nghĩa",
+          "cánh đồng",
+          "nhà nước",
+          "thành phố",
+          "bác sĩ",
+          "kỹ sư",
+          "giáo viên",
+          "học sinh",
+          "sinh viên",
+          "công nhân",
+          "nông thôn",
+          "đô thị",
+          "quân đội",
+          "công an",
+          "y tế",
+          "giáo dục",
+          "văn hóa"
+        ])
+analysis_settings.filter_component.add_filter(vi_dictionary_decompounder)
+
+
 analysis_settings.tokenizer_component.add_tokenizer(vi_ngram_tokenizer)
 
 analyzer = AnalyzerCustom(name="analyzer-vi-ngram")
@@ -48,6 +73,7 @@ analyzer.set_tokenizer(vi_ngram_tokenizer)
 analyzer.add_filter(vi_stopwords)
 analyzer.add_filter(Filter(type="lowercase"))
 analyzer.add_filter(Filter(type="asciifolding"))
+analyzer.add_filter(vi_dictionary_decompounder)
 
 analysis_settings.analyzer_component.add_analyzer(analyzer)
 
@@ -69,7 +95,22 @@ index_template = {
             "merge.scheduler.max_thread_count": 1,
             "indexing.slowlog.threshold.index.warn": "10s",
             "indexing.slowlog.threshold.index.info": "5s",
-            "analysis":analysis_settings.build()["analysis"]
+            "analysis":{
+                "filter": {
+                    "vi_stopwords": {
+                        "type": "stop",
+                        "stopwords": words
+                    }
+                },
+                "analyzer": {
+                    "analyzer-vietnamese": {
+                      "tokenizer": "standard",
+                      "filter": [
+                        "vi_stopwords"
+                      ]
+                    }
+                  }
+            }
         },
         "mappings": {
             "properties": {
@@ -92,6 +133,7 @@ index_template = {
     }
 }
 print(index_template)
+json.dump(index_template, open('index_template.json', 'w', encoding='utf-8'), indent=4)
 
 
 if client.indices.exists_index_template(name="baolaodong_template"):

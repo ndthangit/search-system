@@ -125,6 +125,7 @@ services:
       - indices.recovery.max_bytes_per_sec=50mb
       - cluster.routing.allocation.node_concurrent_recoveries=2
       - node.store.allow_mmap=false
+      - 
 
       # Search and memory settings
       - search.default_search_timeout=30s
