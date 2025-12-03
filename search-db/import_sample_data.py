@@ -3,7 +3,8 @@ import re
 from datetime import datetime
 
 import pandas as pd
-
+from elasticsearch import helpers
+import traceback
 from setup import client
 
 
@@ -45,8 +46,7 @@ def convert_vietnamese_date(date_str):
 
 data = pd.read_csv("data/Dataset_articles_NoID.csv")
 
-from elasticsearch import helpers
-import traceback
+
 # Process NDJSON files
 
 # Create index (matches wikipedia-people* pattern)

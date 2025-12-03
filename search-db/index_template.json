@@ -95,13 +95,66 @@
                             "v\u1edbi",
                             "v\u1eeba"
                         ]
+                    },
+                    "vn_number_mapper": {
+                        "type": "pattern_replace",
+                        "pattern": "(\\d+)_(\\d+)",
+                        "replacement": "$1$2"
+                    },
+                    "synonym_sports": {
+                        "type": "synonym",
+                        "synonyms": [
+                            "b\u00f3ng \u0111\u00e1 => th\u1ec3 thao b\u00f3ng \u0111\u00e1, b\u00f3ng \u0111\u00e1 s\u00e2n c\u1ecf, b\u00f3ng \u0111\u00e1 chuy\u00ean nghi\u1ec7p, \u0111\u00e1 b\u00f3ng, thi \u0111\u1ea5u b\u00f3ng, ch\u01a1i b\u00f3ng",
+                            "th\u1ec3 thao => v\u1eadn \u0111\u1ed9ng, \u0111\u1ed9ng l\u1ef1c th\u1ec3 ch\u1ea5t, k\u1ef9 n\u0103ng th\u1ec3 ch\u1ea5t, k\u1ef9 n\u0103ng th\u1ec3 thao, th\u1ec3 thao chuy\u00ean nghi\u1ec7p, n\u0103ng \u0111\u1ed9ng, chuy\u00ean nghi\u1ec7p, s\u1ee9c m\u1ea1nh",
+                            "thi \u0111\u1ea5u => tham gia thi \u0111\u1ea5u, \u0111\u1ea5u tranh, \u0111\u1ea5u cu\u1ed9c, tr\u1eadn \u0111\u1ea5u, cu\u1ed9c thi, gi\u1ea3i \u0111\u1ea5u, c\u1ea1nh tranh, quy\u1ebft li\u1ec7t, nhi\u1ec7t huy\u1ebft, tr\u1eadn thi"
+                        ],
+                        "expand": "true"
+                    }
+                },
+                "char_filter": {
+                    "number_mapping": {
+                        "type": "mapping",
+                        "mappings": [
+                            "kh\u00f4ng => 0",
+                            "m\u1ed9t => 1",
+                            "m\u1ed1t => 1",
+                            "hai => 2",
+                            "ba => 3",
+                            "b\u1ed1n => 4",
+                            "t\u01b0 => 4",
+                            "n\u0103m => 5",
+                            "l\u0103m => 5",
+                            "nh\u0103m => 5",
+                            "s\u00e1u => 6",
+                            "b\u1ea3y => 7",
+                            "t\u00e1m => 8",
+                            "ch\u00edn => 9",
+                            "m\u01b0\u1eddi => _10",
+                            "ch\u1ee5c => _10",
+                            "tr\u0103m => _100",
+                            "ngh\u00ecn => _1000",
+                            "ng\u00e0n => _1000",
+                            "v\u1ea1n => _10000",
+                            "tri\u1ec7u => _1000000",
+                            "t\u1ec9 => _1000000000",
+                            "l\u1ebb => .",
+                            "linh => ."
+                        ]
                     }
                 },
                 "analyzer": {
                     "analyzer-vietnamese": {
+                        "type": "custom",
                         "tokenizer": "standard",
                         "filter": [
-                            "vi_stopwords"
+                            "vi_stopwords",
+                            "lowercase",
+                            "asciifolding",
+                            "vn_number_mapper",
+                            "synonym_sports"
+                        ],
+                        "char_filter": [
+                            "number_mapping"
                         ]
                     }
                 }

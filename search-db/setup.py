@@ -100,16 +100,71 @@ index_template = {
                     "vi_stopwords": {
                         "type": "stop",
                         "stopwords": words
-                    }
+                    },
+                    "vn_number_mapper": {
+                        "type": "pattern_replace",
+                        "pattern": "(\\d+)_(\\d+)",
+                        "replacement": "$1$2"
+                      },
+                    "synonym_sports": {
+                      "type": "synonym",
+                      "synonyms": [
+                        "bóng đá => thể thao bóng đá, bóng đá sân cỏ, bóng đá chuyên nghiệp, đá bóng, thi đấu bóng, chơi bóng",
+                        "thể thao => vận động, động lực thể chất, kỹ năng thể chất, kỹ năng thể thao, thể thao chuyên nghiệp, năng động, chuyên nghiệp, sức mạnh",
+                        "thi đấu => tham gia thi đấu, đấu tranh, đấu cuộc, trận đấu, cuộc thi, giải đấu, cạnh tranh, quyết liệt, nhiệt huyết, trận thi"
+                      ],
+                      "expand": "true"
+                    },
+                },
+                "char_filter": {
+                  "number_mapping": {
+                    "type": "mapping",
+                    "mappings": [
+                      "không => 0",
+                      "một => 1",
+                      "mốt => 1",
+                      "hai => 2",
+                      "ba => 3",
+                      "bốn => 4",
+                      "tư => 4",
+                      "năm => 5",
+                      "lăm => 5",
+                      "nhăm => 5",
+                      "sáu => 6",
+                      "bảy => 7",
+                      "tám => 8",
+                      "chín => 9",
+                      "mười => _10",
+                      "chục => _10",
+                      "trăm => _100",
+                      "nghìn => _1000",
+                      "ngàn => _1000",
+                      "vạn => _10000",
+                      "triệu => _1000000",
+                      "tỉ => _1000000000",
+                      "lẻ => .",
+                      "linh => ."
+
+                    ]
+                  }
                 },
                 "analyzer": {
                     "analyzer-vietnamese": {
-                      "tokenizer": "standard",
-                      "filter": [
-                        "vi_stopwords"
-                      ]
+                        "type": "custom",
+                        "tokenizer": "standard",
+                        "filter": [
+                            "vi_stopwords",
+                            "lowercase",
+                            "asciifolding",
+                            "vn_number_mapper",
+                            "synonym_sports"
+                        ],
+                        "char_filter": [
+                            "number_mapping"
+                        ]
                     }
                   }
+
             }
         },
         "mappings": {
