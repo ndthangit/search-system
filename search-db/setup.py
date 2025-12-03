@@ -171,20 +171,10 @@ index_template = {
             "properties": {
                 "url": {"type": "keyword"},
                 "title": {"type": "text"},
-                "summary": {"type": "text"},
-                "contents": {"type": "text"},
-                "date": {"type": "date"},
-                "authors": {
-                    "type": "text",
-                    "fields": {"keyword": {"type": "keyword"}}
-                },
-                "category": {"type": "keyword"},
-                "tags": {
-                    "type": "text",
-                    "fields": {"keyword": {"type": "keyword"}}
-                }
+                "summary": {"type": "text"}
             }
         }
+
     }
 }
 print(index_template)

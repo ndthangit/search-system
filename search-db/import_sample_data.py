@@ -7,74 +7,27 @@ from elasticsearch import helpers
 import traceback
 from setup import client
 
+data = pd.read_json("data/data.json")
 
-def safe_literal_eval(val):
-    """Chuyển đổi string list thành Python list an toàn"""
-    if pd.isna(val) or val == '':
-        return []
-    try:
-        # Xử lý trường hợp có dấu ngoặc vuông
-        if val.startswith('[') and val.endswith(']'):
-            return ast.literal_eval(val)
-        else:
-            # Nếu không phải list, coi như single value
-            return [val.strip()]
-    except (ValueError, SyntaxError):
-        # Nếu có lỗi, split bằng dấu phẩy
-        return [item.strip().strip("'\"") for item in val.split(',')]
-
-def convert_vietnamese_date(date_str):
-    """Chuyển đổi date tiếng Việt sang định dạng ISO"""
-    if not date_str:
-        return None
-
-    try:
-        # Loại bỏ các phần thừa như "Thứ sáu,", "(GMT+7)"
-        cleaned = re.sub(r'Thứ\s+\w+,\s*', '', date_str)  # Bỏ "Thứ sáu, "
-        cleaned = re.sub(r'\s*\(GMT[+-]\d+\)', '', cleaned)  # Bỏ "(GMT+7)"
-        cleaned = cleaned.strip()
-
-        # Parse thành datetime object
-        dt = datetime.strptime(cleaned, '%d/%m/%Y %H:%M')
-
-        # Chuyển sang ISO format
-        return dt.isoformat()
-
-    except Exception as e:
-        print(f"Lỗi convert date: {date_str} - {e}")
-        return None
-
-data = pd.read_csv("data/Dataset_articles_NoID.csv")
-
+data.head()
 
 # Process NDJSON files
 
 # Create index (matches wikipedia-people* pattern)
 
-INDEX_NAME = "articles-csv"
+INDEX_NAME = "articles-json"
 if not client.indices.exists(index=INDEX_NAME):
     client.indices.create(index=INDEX_NAME)
     print(f"Index '{INDEX_NAME}' created successfully")
 else:
     client.indices.delete(index=INDEX_NAME)
-
+#
 batch_size = 5
 actions = []
 
 
 count =0
 for index, row in data.iterrows():
-
-    # Xử lý tags từ string list thành Python list
-    tags = safe_literal_eval(row['Tags'])
-
-    # Xử lý authors tương tự
-    authors = safe_literal_eval(row['Author(s)'])
-
-
-    # Sử dụng giá trị mặc định nếu thiếu
-    # if not full_text or not full_text.strip():
-    #     full_text = "No content available"
 
     if count >10:
         break
@@ -84,16 +37,12 @@ for index, row in data.iterrows():
     # Prepare ES document
     es_doc = {
         "_index": INDEX_NAME,
-        "_id": row['URL'],
+        "_id": row['link'],
         "_source": {
-            "url": row['URL'],
-            "title": row['Title'],
-            "summary": row['Summary'],
-            "contents": row['Contents'],
-            "date": convert_vietnamese_date(row['Date']),
-            "authors": authors,
-            "category": row['Category'],
-            "tags": tags
+            "link": row['link'],
+            "title": row['title'],
+            "summary": row['summary']
+
         }
     }
     print(actions)
