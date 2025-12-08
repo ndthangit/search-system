@@ -1,3 +1,4 @@
+import json as pyjson
 from sanic import Blueprint
 from sanic.response import json
 from sanic_ext import openapi
@@ -10,6 +11,19 @@ from app.dto.response.document_dto import DocumentDto
 bp = Blueprint("elastic_search", url_prefix="/elastic_search")
 
 es_service = ElasticService()
+
+
+def _build_document_body(data: dict) -> dict:
+    return {
+        "url": data.get("url"),
+        "title": data.get("title"),
+        "summary": data.get("summary"),
+        "contents": data.get("contents"),
+        "date": data.get("date"),
+        "authors": data.get("authors", []),
+        "category": data.get("category"),
+        "tags": data.get("tags", []),
+    }
 
 
 @bp.get("/ping")
@@ -74,19 +88,79 @@ async def ping(_):
 async def index_data(request, index_name: str):
     data = request.json
 
-    body = {
-        "url": data.get("url"),
-        "title": data.get("title"),
-        "summary": data.get("summary"),
-        "contents": data.get("contents"),
-        "date": data.get("date"),
-        "authors": data.get("authors", []),
-        "category": data.get("category"),
-        "tags": data.get("tags", []),
-    }
+    body = _build_document_body(data)
 
     res = await es_service.index_data(index_name, data.get("id"), body)
     return json(res.body)
+
+## save in document by file json: is list data (use for iterate save one by one document)
+
+@bp.post("/save-documents/<index_name:str>")
+@openapi.summary("Index multiple documents from uploaded JSON file")
+@openapi.description("Upload a JSON file containing an array of documents to be indexed one by one.")
+@openapi.body(
+    {
+        "multipart/form-data": {
+            "file": {
+                "type": "string",
+                "format": "binary",
+                "description": "JSON file with a list of documents (same fields as single save)."
+            }
+        }
+    },
+    required=True,
+    description="File upload with list of documents"
+)
+@openapi.response(
+    200,
+    {
+        "application/json": {
+            "indexed": int,
+            "errors": list,
+            "items": list
+        }
+    },
+    "Bulk index result"
+)
+async def index_data_from_file(request, index_name: str):
+    uploaded_files = request.files.get("file")
+    if not uploaded_files:
+        return json({"error": "Missing file in 'file' form field"}, status=400)
+
+    uploaded_file = uploaded_files[0] if isinstance(uploaded_files, list) else uploaded_files
+
+    try:
+        documents = pyjson.loads(uploaded_file.body.decode("utf-8"))
+    except Exception as exc:
+        return json({"error": f"Invalid JSON file: {exc}"}, status=400)
+
+    if not isinstance(documents, list):
+        return json({"error": "JSON content must be a list of documents"}, status=400)
+
+    indexed = []
+    errors = []
+
+    for doc in documents:
+        if not isinstance(doc, dict):
+            errors.append({"error": "Each item must be an object", "item": doc})
+            continue
+
+        body = _build_document_body(doc)
+
+        try:
+            res = await es_service.index_data(index_name, doc.get("id"), body)
+            res_body = res.body if hasattr(res, "body") else res
+            indexed.append(
+                {
+                    "id": res_body.get("_id"),
+                    "result": res_body.get("result"),
+                }
+            )
+        except Exception as exc:
+            errors.append({"id": doc.get("id"), "error": str(exc)})
+
+    status_code = 200 if not errors else 207
+    return json({"indexed": len(indexed), "errors": errors, "items": indexed}, status=status_code)
 
 
 @bp.post("/search-match/<index_name:str>")
