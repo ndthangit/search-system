@@ -5,7 +5,6 @@ from elasticsearch import Elasticsearch
 from elastic_custom_template.analysis import AnalysisComponent
 from elastic_custom_template.analyzer import  AnalyzerCustom
 from elastic_custom_template.filter import FilterStop, FilterComponent, Filter, FilterDictionaryDecompounder
-from elastic_custom_template.tokenizer import TokenizerNgram
 
 client = Elasticsearch(
     hosts=["https://localhost:9200"],  # Địa chỉ Elasticsearch
@@ -24,62 +23,11 @@ print(words)
 # # 2. Tạo các instance filter cụ thể
 vi_stopwords = FilterStop(name="vi_stopwords", stopwords=words)
 
-filter_component = FilterComponent()
+import pandas as pd
 
-filter_component.add_filter(vi_stopwords)
-built_filters = filter_component.build()
-print(built_filters)
+df = pd.read_csv("hf://datasets/tsdocode/vietnamese-dictionary/vi_dictionary.csv")
 
-
-vi_ngram_tokenizer = TokenizerNgram(
-    name="vi_ngram_tokenizer",
-    min_gram=2,
-    max_gram=3,
-    token_chars=["letter","digit","whitespace"]
-)
-
-analysis_settings = AnalysisComponent()
-
-analysis_settings.filter_component.add_filter(vi_stopwords)
-
-vi_dictionary_decompounder= FilterDictionaryDecompounder(name="vi_dictionary_decompounder",word_list=[
-          "xã hội",
-          "cộng hòa",
-          "chủ nghĩa",
-          "cánh đồng",
-          "nhà nước",
-          "thành phố",
-          "bác sĩ",
-          "kỹ sư",
-          "giáo viên",
-          "học sinh",
-          "sinh viên",
-          "công nhân",
-          "nông thôn",
-          "đô thị",
-          "quân đội",
-          "công an",
-          "y tế",
-          "giáo dục",
-          "văn hóa"
-        ])
-analysis_settings.filter_component.add_filter(vi_dictionary_decompounder)
-
-
-analysis_settings.tokenizer_component.add_tokenizer(vi_ngram_tokenizer)
-
-analyzer = AnalyzerCustom(name="analyzer-vi-ngram")
-analyzer.set_tokenizer(vi_ngram_tokenizer)
-analyzer.add_filter(vi_stopwords)
-analyzer.add_filter(Filter(type="lowercase"))
-analyzer.add_filter(Filter(type="asciifolding"))
-analyzer.add_filter(vi_dictionary_decompounder)
-
-analysis_settings.analyzer_component.add_analyzer(analyzer)
-
-print(analysis_settings.build())
-
-json.dump(analysis_settings.build(), open('sample_analysis.json', 'w', encoding='utf-8'), indent=4)
+print(df.columns)
 
 
 index_template = {
@@ -103,7 +51,7 @@ index_template = {
                     },
                     "vn_number_mapper": {
                         "type": "pattern_replace",
-                        "pattern": "(\\d+)_(\\d+)",
+                        "pattern": "(\\d+) (\\d+)",
                         "replacement": "$1$2"
                       },
                     "synonym_sports": {
@@ -115,6 +63,16 @@ index_template = {
                       ],
                       "expand": "true"
                     },
+                    "my_shingle_filter": {
+                      "type": "shingle",
+                      "min_shingle_size": 2,
+                      "max_shingle_size": 3,
+                      "output_unigrams": "true"
+                    },
+                    "keep_words_filter": {
+                        "type": "keep",
+                        "keep_words": df['word'].dropna().tolist()
+                    }
                 },
                 "char_filter": {
                   "number_mapping": {
@@ -135,6 +93,7 @@ index_template = {
                       "tám => 8",
                       "chín => 9",
                       "mười => _10",
+                    "mươi => _10",
                       "chục => _10",
                       "trăm => _100",
                       "nghìn => _1000",
@@ -149,7 +108,7 @@ index_template = {
                   }
                 },
                 "analyzer": {
-                    "analyzer-vietnamese": {
+                    "vietnamese_analyzer": {
                         "type": "custom",
                         "tokenizer": "standard",
                         "filter": [
@@ -162,6 +121,18 @@ index_template = {
                         "char_filter": [
                             "number_mapping"
                         ]
+                    },
+                    "vi_shingle_keep_analyzer": {
+                        "type": "custom",
+                        "tokenizer": "standard",
+                        "char_filter": [
+                            "number_mapping"
+                        ],
+                        "filter": [
+                            "lowercase",
+                            "my_shingle_filter",
+                            "keep_words_filter"
+                        ]
                     }
                   }
 
@@ -169,9 +140,26 @@ index_template = {
         },
         "mappings": {
             "properties": {
-                "url": {"type": "keyword"},
-                "title": {"type": "text"},
-                "summary": {"type": "text"}
+                "link": {
+                    "type": "keyword"
+                },
+                "title-va": {
+                    "analyzer": "vietnamese_analyzer",
+                    "type": "text"
+                },
+                "title-vska" :{
+                    "analyzer": "vi_shingle_keep_analyzer",
+                    "type": "text"
+                },
+                "summary-vska": {
+                    "analyzer": "vi_shingle_keep_analyzer",
+                    "type": "text"
+                },
+                "summary-va": {
+                    "analyzer": "vietnamese_analyzer",
+                    "type": "text"
+                }
+
             }
         }
 
@@ -189,5 +177,3 @@ client.indices.put_index_template(
     index_patterns=index_template['index_patterns'],
     template=index_template['template']
 )
-
-

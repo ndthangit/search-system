@@ -40,8 +40,10 @@ for index, row in data.iterrows():
         "_id": row['link'],
         "_source": {
             "link": row['link'],
-            "title": row['title'],
-            "summary": row['summary']
+            "title-va": row['title'],
+            "title-vska": row['title'],
+            "summary-va": row['summary'],
+            "summary-vska": row['summary']
 
         }
     }
