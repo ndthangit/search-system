@@ -9,41 +9,34 @@ import {
   Tab,
   TextField,
   Button,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   Stack,
   Paper,
 } from "@mui/material";
 import Editor from "@monaco-editor/react";
-import { useSearchArticles } from "./hooks/useSearchArticles";
-import type { Article, SearchParams } from "../../types/article";
-import ArticleList from "../../components/ArticleList";
-import ArticleModal from "../../components/ArticleModal";
+import { useSearchArticles } from "./hooks/useSearchArticles.tsx";
+import type { Article, SearchParams } from "../../../../types/article.ts";
+import ArticleList from "../../../../components/ArticleList.tsx";
+import ArticleModal from "../../../../components/ArticleModal.tsx";
 
 export default function Search() {
   const [tab, setTab] = useState(0);
   const [params, setParams] = useState<SearchParams>({
     query: "",
-    index: "articles",
-    model: "match",
-    size: 10,
-    dsl: {},
+    indexName: "articles",
   });
   const [dslText, setDslText] = useState("{}");
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const { data, error, isLoading, refetch } = useSearchArticles(params);
+  const { data, error, isLoading } = useSearchArticles(params);
 
   const handleSearch = () => {
-    // const finalParams =
-    //   tab === 1
-    //     ? { ...params, dsl: parseDSL(dslText) }
-    //     : { ...params, dsl: {}, model: "match" };
-    // setParams(finalParams);
-    refetch();
+    const finalParams =
+      tab === 1
+        ? { ...params, dsl: parseDSL(dslText) }
+        : { ...params, dsl: {}, model: "match" };
+    setParams(finalParams);
+    // refetch();
   };
 
   const handleArticleClick = (article: Article) => {
@@ -56,7 +49,7 @@ export default function Search() {
     setSelectedArticle(null);
   };
 
-  const articles = data?.list_docs || [];
+  const articles = data?.data || [];
 
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
@@ -64,7 +57,7 @@ export default function Search() {
         Elasticsearch Query Console
       </Typography>
 
-      <Paper sx={{ mb: 3, background: "rgba(34,27,51,0.85)", borderRadius: 2 }}>
+      <Paper sx={{ mb: 3, borderRadius: 2 }}>
         <Tabs
           value={tab}
           onChange={(_, newValue) => setTab(newValue)}
@@ -100,22 +93,21 @@ export default function Search() {
       {/* Advanced Query */}
       {tab === 1 && (
         <Box sx={{ mt: 2 }}>
-          <FormControl fullWidth sx={{ mb: 2 }}>
-            <InputLabel>Model</InputLabel>
-            <Select
-              value={params.model}
-              label="Model"
-              onChange={(e) =>
-                setParams({ ...params, model: e.target.value as any })
-              }
-            >
-              <MenuItem value="match">Match</MenuItem>
-              <MenuItem value="multi_match">Multi Match</MenuItem>
-              <MenuItem value="bool">Bool</MenuItem>
-              <MenuItem value="function_score">Function Score</MenuItem>
-              <MenuItem value="script_score">Script Score</MenuItem>
-            </Select>
-          </FormControl>
+          {/*<FormControl fullWidth sx={{ mb: 2 }}>*/}
+          {/*  <InputLabel>Model</InputLabel>*/}
+          {/*  <Select*/}
+          {/*    label="Model"*/}
+          {/*    onChange={(e) =>*/}
+          {/*      setParams({ ...params})*/}
+          {/*    }*/}
+          {/*  >*/}
+          {/*    <MenuItem value="match">Match</MenuItem>*/}
+          {/*    <MenuItem value="multi_match">Multi Match</MenuItem>*/}
+          {/*    <MenuItem value="bool">Bool</MenuItem>*/}
+          {/*    <MenuItem value="function_score">Function Score</MenuItem>*/}
+          {/*    <MenuItem value="script_score">Script Score</MenuItem>*/}
+          {/*  </Select>*/}
+          {/*</FormControl>*/}
 
           <Editor
             height="300px"

@@ -5,16 +5,25 @@ export interface Article {
 }
 
 export interface SearchResponse {
-    list_docs: Article[];
+    pageNumber: 0,
+    pageSize: 0,
+    totalElements: 0,
+    totalPages: 0,
+    took: null,
+    maxScore: null,
+    data: {
+        index: string,
+        id: string,
+        score: null,
+        source: Document,
+    } []
 }
 
 export interface SearchParams {
-  query?: string;                // Text query đơn giản
-  index?: string;                // Tên index (vd: articles)
-  model?: "match" | "multi_match" | "bool" | "function_score" | "script_score";
-  dsl?: Record<string, any>;     // Cấu trúc truy vấn nâng cao (ES Query DSL)
-  rankProfile?: string;          // Tên profile xếp hạng tùy chỉnh
-  size?: number;                 // Số lượng kết quả trả về
-  from?: number;                 // Offset phân trang
-  sort?: Array<Record<string, any>>; // Mảng sort (vd: [{ "_score": "desc" }])
+  query: string;
+  fields?: string[];
+  indexName: string;
+  dsl?: Record<string, any>;
+  size?: number;
+  page?: number;
 }

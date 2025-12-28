@@ -17,7 +17,7 @@ type TMenu = {
 
 const menu: TMenu[] = [
     { title: "Search", path: "/search" },
-    { title: "Import", path: "/import" },
+    { title: "Import", path: "/form" },
 ];
 
 export default function Menu() {

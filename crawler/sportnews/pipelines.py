@@ -6,8 +6,15 @@
 
 # useful for handling different item types with a single interface
 from itemadapter import ItemAdapter
+import json
 
+class SportJsonPipeline:
+    def open_spider(self, spider):
+        self.file = open("data.json", "a", encoding="utf-8")
 
-class SportnewsPipeline:
+    def close_spider(self, spider):
+        self.file.close()
+
     def process_item(self, item, spider):
+        self.file.write(json.dumps(item, ensure_ascii=False) + "\n")
         return item

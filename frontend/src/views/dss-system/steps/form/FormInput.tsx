@@ -12,7 +12,7 @@ import {
 } from "@mui/material";
 import Editor from "@monaco-editor/react";
 
-export default function Import() {
+export default function FormInput() {
   const [tab, setTab] = useState(0);
   const [title, setTitle] = useState("");
   const [text, setText] = useState("");
@@ -21,9 +21,9 @@ export default function Import() {
   const [tokenizer, setTokenizer] = useState("standard");
   const [analyzer, setAnalyzer] = useState("default");
   const [rawBody, setRawBody] = useState(`{
-  "title": "Example",
-  "content": "Hello Elasticsearch"
-}`);
+      "title": "Example",
+      "content": "Hello Elasticsearch"
+    }`);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0] || null;
@@ -36,7 +36,6 @@ export default function Import() {
         ? { title, text, index, tokenizer, analyzer, file }
         : { raw: rawBody };
     console.log("Submit payload:", payload);
-    alert("Đã gửi dữ liệu! (xem console)");
   };
 
   return (
@@ -46,7 +45,6 @@ export default function Import() {
         sx={{
           p: 4,
           borderRadius: 3,
-          backgroundColor: "rgba(34, 27, 51, 0.85)",
           backdropFilter: "blur(8px)",
         }}
       >
