@@ -1,6 +1,6 @@
 import click
 
-from sportnews.cli.jobs.sport_news import sport_news_crawler
+from app.cli.jobs.sport_news_crawler import sport_news_crawler
 
 
 @click.group()

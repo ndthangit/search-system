@@ -3,3 +3,6 @@ Sanic-Cors==2.2.0
 sanic-ext==23.12.0
 sanic-routing==23.12.0
 pydantic==1.10.12
+python-cli-scheduler==1.1.7
+click==8.1.7
+scrapy==2.13.4
