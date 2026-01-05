@@ -43,6 +43,20 @@ index_template = {
             "merge.scheduler.max_thread_count": 1,
             "indexing.slowlog.threshold.index.warn": "10s",
             "indexing.slowlog.threshold.index.info": "5s",
+
+            "similarity": {
+                "title_bm25": {
+                    "type": "BM25",
+                    "b": 0.3,    # Tiêu đề thường ngắn nên b nhỏ
+                    "k1": 1.5    # Tăng trọng số cho tiêu đề
+                },
+                "summary_bm25": {
+                    "type": "BM25",
+                    "b": 0.75,
+                    "k1": 1.2
+                }
+            },
+
             "analysis":{
                 "filter": {
                     "vi_stopwords": {
@@ -66,7 +80,7 @@ index_template = {
                     "my_shingle_filter": {
                       "type": "shingle",
                       "min_shingle_size": 2,
-                      "max_shingle_size": 3,
+                      "max_shingle_size": 4,
                       "output_unigrams": "true"
                     },
                     "keep_words_filter": {
@@ -145,18 +159,22 @@ index_template = {
                 },
                 "title-va": {
                     "analyzer": "vietnamese_analyzer",
+                    "similarity": "title_bm25",
                     "type": "text"
                 },
                 "title-vska" :{
                     "analyzer": "vi_shingle_keep_analyzer",
+                    "similarity": "title_bm25",
                     "type": "text"
                 },
                 "summary-vska": {
                     "analyzer": "vi_shingle_keep_analyzer",
+                    "similarity": "summary_bm25",
                     "type": "text"
                 },
                 "summary-va": {
                     "analyzer": "vietnamese_analyzer",
+                    "similarity": "summary_bm25",
                     "type": "text"
                 }
 

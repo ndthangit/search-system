@@ -47,7 +47,7 @@ for index, row in data.iterrows():
 
         }
     }
-    print(actions)
+    # print(actions)
     actions.append(es_doc)
 
     # Bulk index when batch is full
