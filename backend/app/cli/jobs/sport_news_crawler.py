@@ -10,7 +10,7 @@ from cli_scheduler import AsyncSchedulerJob
 @click.command(context_settings=dict(help_option_names=["-h", "--help"]))
 @click.option(
     "--scheduler",
-    default="^true@3600",
+    default="^true@60",
     show_default=True,
     type=str,
     help=f'Scheduler with format "{scheduler_format}"',
@@ -28,19 +28,9 @@ class SportNewsCrawler(AsyncSchedulerJob):
         subprocess.run([
             "scrapy",
             "crawl",
-            "thethao",
+            "sport_news",
             "-o",
             "data/sport_news.jsonl",
-            "-L",
-            "INFO"
-        ])
-
-        subprocess.run([
-            "scrapy",
-            "crawl",
-            "hust_feeds",
-            "-o",
-            "data/hust_feeds.jsonl",
             "-L",
             "INFO"
         ])
