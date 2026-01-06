@@ -125,7 +125,6 @@ services:
       - indices.recovery.max_bytes_per_sec=50mb
       - cluster.routing.allocation.node_concurrent_recoveries=2
       - node.store.allow_mmap=false
-      - 
 
       # Search and memory settings
       - search.default_search_timeout=30s
@@ -155,26 +154,7 @@ services:
       interval: 10s
       timeout: 10s
       retries: 120
-    # command: >
-    #   bash -c '
-    #     # Copy plugin file từ mounted volume sang /tmp và cài đặt
-    #     if [ -f "/usr/share/elasticsearch/plugins/elasticsearch-analysis-vietnamese-8.19.4.zip" ]; then
-    #       echo "Found plugin file, copying to /tmp...";
-    #       cp /usr/share/elasticsearch/plugins/elasticsearch-analysis-vietnamese-8.19.4.zip /tmp/plugin.zip;
-    #       echo "Installing Vietnamese analyzer plugin...";
-    #       /usr/share/elasticsearch/bin/elasticsearch-plugin install --batch file:///tmp/plugin.zip;
-    #       echo "Vietnamese analyzer plugin installed successfully";
-    #       # Clean up
-    #       rm -f /tmp/plugin.zip;
-    #     else
-    #       echo "Plugin file not found in plugins directory";
-    #       echo "Available files:";
-    #       ls -la /usr/share/elasticsearch/plugins/ || echo "Cannot list plugins directory";
-    #     fi;
-        
-    #     # Khởi động Elasticsearch
-    #     exec /usr/local/bin/docker-entrypoint.sh elasticsearch
-    #   '
+    
   kibana:
     depends_on:
       es01:
@@ -200,28 +180,6 @@ services:
       interval: 10s
       timeout: 10s
       retries: 120
-
-  # semantic:
-  #   # build:
-  #   #   context: ./semantic
-  #   #   dockerfile: Dockerfile
-  #   image: thangit67/semanticsearch:1.4.0
-  #   ports:
-  #     - 8001:8001
-  #   volumes:
-  #     - certs:/usr/share/semantic/config/certs
-  #     - semanticdata:/usr/share/semantic/data
-  #   depends_on:
-  #     es01:
-  #       condition: service_healthy
-  #   networks:
-  #     - search-system  # Thêm vào cùng network
-
-  #   environment:
-  #     - ELASTIC_URL=https://es01:9200
-  #     - ELASTIC_USERNAME=elastic
-  #     - ELASTIC_PASSWORD=elastic
-  #     - ELASTICSEARCH_SSL_CERTIFICATEAUTHORITIES=/usr/share/semantic/config/certs/ca/ca.crt
 
 networks:
   search-system:
