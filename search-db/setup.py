@@ -176,7 +176,15 @@ index_template = {
                     "analyzer": "vietnamese_analyzer",
                     "similarity": "summary_bm25",
                     "type": "text"
+                },
+
+                "length": {
+                    "type": "integer"
+                },
+                "last_updated": {
+                    "type": "timestamp"
                 }
+
 
             }
         }
