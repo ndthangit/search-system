@@ -182,7 +182,7 @@ index_template = {
                     "type": "integer"
                 },
                 "last_updated": {
-                    "type": "timestamp"
+                    "type": "date"
                 }
 
 

@@ -1,10 +1,8 @@
-import ast
-import re
-from datetime import datetime
+
+import time
 
 import pandas as pd
 from elasticsearch import helpers
-import traceback
 from setup import client
 
 data = pd.read_json("data/data.json")
@@ -43,7 +41,9 @@ for index, row in data.iterrows():
             "title-va": row['title'],
             "title-vska": row['title'],
             "summary-va": row['summary'],
-            "summary-vska": row['summary']
+            "summary-vska": row['summary'],
+            "length": 200,
+            "last_updated": int(time.time() * 1000)
 
         }
     }
