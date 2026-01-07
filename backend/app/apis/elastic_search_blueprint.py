@@ -11,6 +11,24 @@ bp = Blueprint("elastic_search", url_prefix="/elastic_search")
 
 es_service = ElasticService()
 
+def _expand_search_fields(fields: list[str]) -> list[str]:
+    expanded: list[str] = []
+    for field in fields:
+        if field == "title":
+            expanded.extend(["title-va", "title-vska"])
+        elif field == "summary":
+            expanded.extend(["summary-va", "summary-vska"])
+        else:
+            expanded.append(field)
+
+    seen: set[str] = set()
+    result: list[str] = []
+    for field in expanded:
+        if field not in seen:
+            seen.add(field)
+            result.append(field)
+    return result
+
 
 @bp.get("/ping")
 @openapi.summary("Check Elasticsearch connection")
@@ -57,14 +75,11 @@ async def ping(_):
     {
         "application/json": {
             "id": str,
-            "url": str,
+            "link": str,
             "title": str,
             "summary": str,
-            "contents": str,
-            "date": str,           # ISO8601
-            "authors": [str],
-            "category": str,
-            "tags": [str]
+            "length": int,
+            "last_updated": int
         }
     },
     required=True,
@@ -74,15 +89,17 @@ async def ping(_):
 async def index_data(request, index_name: str):
     data = request.json
 
+    link = data.get("link")
+    title = data.get("title")
+    summary = data.get("summary")
     body = {
-        "url": data.get("url"),
-        "title": data.get("title"),
-        "summary": data.get("summary"),
-        "contents": data.get("contents"),
-        "date": data.get("date"),
-        "authors": data.get("authors", []),
-        "category": data.get("category"),
-        "tags": data.get("tags", []),
+        "link": link,
+        "title-va": title,
+        "title-vska": title,
+        "summary-va": summary,
+        "summary-vska": summary,
+        "length": data.get("length"),
+        "last_updated": data.get("last_updated"),
     }
 
     res = await es_service.index_data(index_name, data.get("id"), body)
@@ -105,11 +122,12 @@ async def search_match(request, index_name: str):
     data = request.json
     body = MultiMatchSearchRequest(**data) 
 
+    fields = _expand_search_fields(body.fields)
     query = {
         "query": {
             "multi_match": {
                 "query": body.query,
-                "fields": body.fields
+                "fields": fields
             }
         },
         "from": (body.page - 1) * body.size,

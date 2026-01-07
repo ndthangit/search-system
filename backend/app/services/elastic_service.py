@@ -10,7 +10,7 @@ class ElasticService:
     async def ping(self) -> bool:
         return await self.client.ping()
 
-    async def index_data(self, index: str, doc_id: str | None, body: dict):
+    async def index_data(self, index: str, doc_id: str | None, body: dict): # doc_id None là tạo mới
         if doc_id:
             return await self.client.index(index=index, id=doc_id, document=body)
         else:
