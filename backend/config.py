@@ -35,7 +35,7 @@ class Config:
         'operationsSorter': "alpha"
     }
 
-    API_HOST = os.getenv('API_HOST', '0.0.0.0:8096')
+    API_HOST = os.getenv('API_HOST', f'http://{HOST}:{PORT}')
     API_BASEPATH = os.getenv('API_BASEPATH', '')
     API_SCHEMES = os.getenv('API_SCHEMES', 'http')
     API_VERSION = os.getenv('API_VERSION', '0.0.1')
@@ -44,4 +44,7 @@ class Config:
     API_CONTACT_EMAIL = os.getenv('API_CONTACT_EMAIL', 'example@gmail.com')
 
 class ElasticSearchConfig:
-    HOST = os.getenv('ELASTICSEARCH_HOST', 'http://localhost:9200')
+    HOST = os.getenv('ELASTICSEARCH_HOST', 'https://es01:9200')
+    USERNAME = os.getenv('ELASTICSEARCH_USERNAME', 'elastic')
+    PASSWORD = os.getenv('ELASTIC_PASSWORD', 'elastic')
+    CA_CERT_PATH = os.getenv('ELASTICSEARCH_CA_CERT', '/app/certs/ca/ca.crt')
