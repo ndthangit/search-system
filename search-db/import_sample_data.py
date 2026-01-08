@@ -43,7 +43,7 @@ for index, row in data.iterrows():
             "summary-va": row['summary'],
             "summary-vska": row['summary'],
             "length": 200,
-            "last_updated": int(time.time() * 1000)
+            "last_updated": row['last_updated']
 
         }
     }
