@@ -1,6 +1,7 @@
 from sanic import Blueprint
 from sanic.response import json
 from sanic_ext import openapi
+from elasticsearch import NotFoundError
 from app.services.elastic_service import ElasticService
 from app.dto.request.multi_match_search_request import MultiMatchSearchRequest
 from app.dto.response.search_response import SearchResponse
@@ -134,12 +135,19 @@ async def search_match(request, index_name: str):
         "size": body.size
     }
 
-    res = await es_service.search_match(index_name, query)
-    hits = res['hits']['hits']
-    total_elements = res['hits']['total']['value']
-    total_pages = (total_elements + body.size - 1) // body.size
-    took = res['took']
-    max_score = res['hits'].get('max_score')
+    try:
+        res = await es_service.search_match(index_name, query)
+        hits = res['hits']['hits']
+        total_elements = res['hits']['total']['value']
+        total_pages = (total_elements + body.size - 1) // body.size
+        took = res['took']
+        max_score = res['hits'].get('max_score')
+    except NotFoundError:
+        hits = []
+        total_elements = 0
+        total_pages = 0
+        took = None
+        max_score = None
 
     response = SearchResponse(
         pageNumber=body.page,
