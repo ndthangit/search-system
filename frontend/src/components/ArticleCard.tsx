@@ -1,11 +1,13 @@
 import type { Article } from "../types/article";
 import {
-    Card,
-    CardActionArea,
-    CardContent,
+    Box,
     Typography,
     Link,
+    Paper,
+    useTheme,
 } from "@mui/material";
+import CalendarTodayOutlinedIcon from "@mui/icons-material/CalendarTodayOutlined";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 
 interface ArticleCardProps {
     article: Article;
@@ -13,62 +15,121 @@ interface ArticleCardProps {
 }
 
 export default function ArticleCard({ article, onClick }: ArticleCardProps) {
-    function truncateAbstract(abstract: string, maxLength: number = 200) {
-        if (abstract.length <= maxLength) return abstract;
-        return abstract.substring(0, maxLength) + "...";
+    const theme = useTheme();
+    const isDark = theme.palette.mode === "dark";
+
+    function truncateSummary(summary: string, maxLength: number = 150) {
+        if (!summary) return "";
+        if (summary.length <= maxLength) return summary;
+        return summary.substring(0, maxLength) + "...";
     }
 
+    function formatDate(dateString: string) {
+        if (!dateString) return "";
+        try {
+            const date = new Date(dateString);
+            return date.toLocaleDateString("vi-VN", {
+                day: "numeric",
+                month: "numeric",
+                year: "numeric",
+            });
+        } catch {
+            return dateString;
+        }
+    }
+
+    const handleClick = () => {
+        if (article.url) {
+            window.open(article.url, "_blank", "noopener,noreferrer");
+        }
+        onClick?.(article);
+    };
+
     return (
-        <Card
-            elevation={3}
+        <Paper
+            elevation={0}
+            onClick={handleClick}
             sx={{
-                height: "100%",
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "space-between",
+                p: 3,
+                mb: 2,
+                borderRadius: 3,
+                border: "1px solid",
+                borderColor: isDark ? "#374151" : "#e5e7eb",
+                cursor: "pointer",
+                transition: "all 0.2s ease-in-out",
+                "&:hover": {
+                    backgroundColor: isDark ? "#334155" : "#f0f4ff",
+                    borderColor: isDark ? "#4b5563" : "#3b82f6",
+                    transform: "translateY(-2px)",
+                    boxShadow: isDark 
+                        ? "0 4px 12px rgba(0, 0, 0, 0.3)" 
+                        : "0 4px 12px rgba(59, 130, 246, 0.15)",
+                },
             }}
         >
-            <CardActionArea
-                onClick={() => onClick?.(article)}
-                sx={{ flexGrow: 1, p: 1.5 }}
+            {/* Title */}
+            <Typography
+                variant="h6"
+                component="h3"
+                sx={{
+                    fontWeight: 700,
+                    color: "text.primary",
+                    mb: 1,
+                    lineHeight: 1.4,
+                    fontSize: "1.1rem",
+                }}
             >
-                <CardContent>
-                    <Typography
-                        variant="h6"
-                        component="div"
-                        gutterBottom
+                {article.title}
+            </Typography>
+
+            {/* Summary */}
+            <Typography
+                variant="body2"
+                sx={{
+                    mb: 2,
+                    lineHeight: 1.7,
+                    color: "text.secondary",
+                }}
+            >
+                {truncateSummary(article.summary)}
+            </Typography>
+
+            {/* Footer: Date and URL */}
+            <Box
+                display="flex"
+                alignItems="center"
+                gap={3}
+                flexWrap="wrap"
+            >
+                {article.date && (
+                    <Box display="flex" alignItems="center" gap={0.5} sx={{ color: "text.secondary" }}>
+                        <CalendarTodayOutlinedIcon sx={{ fontSize: 16 }} />
+                        <Typography variant="body2" sx={{ color: "text.secondary" }}>
+                            {formatDate(article.date)}
+                        </Typography>
+                    </Box>
+                )}
+
+                {article.url && (
+                    <Link
+                        href={article.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        underline="hover"
+                        onClick={(e) => e.stopPropagation()}
                         sx={{
-                            fontWeight: 600,
-                            lineHeight: 1.3,
-                            mb: 1,
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 0.5,
+                            fontSize: "0.875rem",
+                            color: "primary.main",
                         }}
                     >
-                        {article.name}
-                    </Typography>
-
-                    <Typography
-                        variant="body2"
-                        color="text.secondary"
-                        sx={{ mb: 2 }}
-                    >
-                        {truncateAbstract(article.abstract)}
-                    </Typography>
-                </CardContent>
-            </CardActionArea>
-
-            <CardContent sx={{ pt: 0 }}>
-                <Link
-                    href={article.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    underline="hover"
-                    color="primary"
-                    sx={{ fontWeight: 500 }}
-                    onClick={(e) => e.stopPropagation()}
-                >
-                    Read more on Wikipedia →
-                </Link>
-            </CardContent>
-        </Card>
+                        <OpenInNewIcon sx={{ fontSize: 16 }} />
+                        {article.url}
+                    </Link>
+                )}
+            </Box>
+        </Paper>
     );
 }

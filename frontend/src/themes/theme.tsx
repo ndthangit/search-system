@@ -1,53 +1,77 @@
-import { createTheme } from "@mui/material/styles";
+import { createTheme, type PaletteMode } from "@mui/material/styles";
 
-export const theme = createTheme({
-  palette: {
-    mode: "dark",
-    primary: { main: "#8b5cf6", dark: "#6d28d9" },
-    secondary: { main: "#00ffff" },
-    background: {
-      default: "#1a1b26",
-      paper: "#232436",
+export const getTheme = (mode: PaletteMode) =>
+  createTheme({
+    palette: {
+      mode,
+      ...(mode === "light"
+        ? {
+            // Light mode
+            primary: { main: "#2563eb", dark: "#1d4ed8" },
+            secondary: { main: "#64748b" },
+            background: {
+              default: "#ffffff",
+              paper: "#ffffff",
+            },
+            text: {
+              primary: "#1a1a1a",
+              secondary: "#6b7280",
+            },
+          }
+        : {
+            // Dark mode
+            primary: { main: "#3b82f6", dark: "#2563eb" },
+            secondary: { main: "#94a3b8" },
+            background: {
+              default: "#0f172a",
+              paper: "#1e293b",
+            },
+            text: {
+              primary: "#f1f5f9",
+              secondary: "#94a3b8",
+            },
+          }),
     },
-    text: {
-      primary: "#e0e0ff",
-      secondary: "#a3a3c2",
-    },
-  },
-  typography: {
-    fontFamily: `"JetBrains Mono", "Fira Code", monospace`,
-    h4: {
-      fontWeight: 700,
-      letterSpacing: "0.5px",
-      color: "#c4b5fd",
-    },
-    body1: {
-      color: "#d6d6f5",
-      fontSize: "0.95rem",
-    },
-  },
-  components: {
-    MuiPaper: {
-      styleOverrides: {
-        root: {
-          backgroundImage: "none",
-          backgroundColor: "rgba(35, 36, 54, 0.85)",
-          backdropFilter: "blur(10px)",
-        },
+    typography: {
+      fontFamily: `"Inter", "Roboto", "Helvetica", "Arial", sans-serif`,
+      h3: {
+        fontWeight: 700,
+      },
+      h6: {
+        fontWeight: 700,
+      },
+      body1: {
+        fontSize: "1rem",
+      },
+      body2: {
+        fontSize: "0.875rem",
       },
     },
-    MuiButton: {
-      styleOverrides: {
-        root: {
-          borderRadius: 8,
-          textTransform: "none",
-          fontWeight: 600,
-          fontFamily: `"JetBrains Mono", monospace`,
-          "&:hover": {
-            boxShadow: "0 0 16px rgba(139, 92, 246, 0.5)",
+    components: {
+      MuiPaper: {
+        styleOverrides: {
+          root: {
+            backgroundImage: "none",
+          },
+        },
+      },
+      MuiButton: {
+        styleOverrides: {
+          root: {
+            borderRadius: 8,
+            textTransform: "none",
+            fontWeight: 600,
+          },
+          contained: {
+            boxShadow: "none",
+            "&:hover": {
+              boxShadow: "none",
+            },
           },
         },
       },
     },
-  },
-});
+  });
+
+// Default theme for backward compatibility
+export const theme = getTheme("light");

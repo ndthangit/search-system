@@ -4,170 +4,244 @@ import {
   Typography,
   Box,
   Alert,
-  CircularProgress,
-  Tabs,
-  Tab,
   TextField,
   Button,
-  Stack,
   Paper,
+  Select,
+  MenuItem,
+  FormControl,
+  InputAdornment,
+  useTheme,
+  Pagination,
 } from "@mui/material";
-import Editor from "@monaco-editor/react";
+import SearchIcon from "@mui/icons-material/Search";
+import NewspaperIcon from "@mui/icons-material/Newspaper";
 import { useSearchArticles } from "./hooks/useSearchArticles.tsx";
 import type { Article, SearchParams } from "../../../../types/article.ts";
 import ArticleList from "../../../../components/ArticleList.tsx";
-import ArticleModal from "../../../../components/ArticleModal.tsx";
+import ThemeToggle from "../../../../components/ThemeToggle.tsx";
+
+const FIELD_OPTIONS = [
+  { value: "", label: "Tất cả" },
+  { value: "title", label: "Tiêu đề" },
+  { value: "link", label: "Đường dẫn" },
+  { value: "summary", label: "Tóm tắt" },
+];
 
 export default function Search() {
-  const [tab, setTab] = useState(0);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedField, setSelectedField] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
   const [params, setParams] = useState<SearchParams>({
     query: "",
+    fields: [],
     indexName: "articles",
+    page: 1,
+    size: 10,
   });
-  const [dslText, setDslText] = useState("{}");
-  const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const theme = useTheme();
+  const isDark = theme.palette.mode === "dark";
 
   const { data, error, isLoading } = useSearchArticles(params);
 
   const handleSearch = () => {
-    const finalParams =
-      tab === 1
-        ? { ...params, dsl: parseDSL(dslText) }
-        : { ...params, dsl: {}, model: "match" };
-    setParams(finalParams);
-    // refetch();
+    if (searchQuery.trim()) {
+      setCurrentPage(1);
+      setParams({
+        query: searchQuery.trim(),
+        fields: selectedField ? [selectedField] : [],
+        indexName: "articles",
+        page: 1,
+        size: 10,
+      });
+    }
   };
 
-  const handleArticleClick = (article: Article) => {
-    setSelectedArticle(article);
-    setIsModalOpen(true);
+  const handlePageChange = (_event: React.ChangeEvent<unknown>, page: number) => {
+    setCurrentPage(page);
+    setParams((prev) => ({
+      ...prev,
+      page: page,
+    }));
   };
 
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setSelectedArticle(null);
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      handleSearch();
+    }
   };
 
-  const articles = data?.data || [];
+  // Transform API response to Article format
+  const articles: Article[] =
+    data?.data?.map((item) => ({
+      id: item.id,
+      title: item.source.title_va || item.source.title_vska,
+      summary: item.source.summary_va || item.source.summary_vska,
+      url: item.source.link,
+      date: item.source.last_updated
+        ? new Date(item.source.last_updated).toISOString()
+        : "",
+    })) || [];
+
+  const totalResults = data?.totalElements ?? (data ? 0 : undefined);
+  const searchTime = data?.took;
+  const totalPages = data?.totalPages ?? 0;
 
   return (
-    <Container maxWidth="md" sx={{ py: 4 }}>
-      <Typography variant="h4" textAlign="center" mb={3} fontWeight={600}>
-        Elasticsearch Query Console
-      </Typography>
+    <Container maxWidth="md" sx={{ py: 4, position: "relative" }}>
+      {/* Theme Toggle - Top Right */}
+      <Box sx={{ position: "absolute", top: 16, right: 16 }}>
+        <ThemeToggle />
+      </Box>
 
-      <Paper sx={{ mb: 3, borderRadius: 2 }}>
-        <Tabs
-          value={tab}
-          onChange={(_, newValue) => setTab(newValue)}
-          textColor="primary"
-          indicatorColor="primary"
-          centered
+      {/* Header */}
+      <Box textAlign="center" mb={4}>
+        <Box
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+          gap={1.5}
+          mb={1}
         >
-          <Tab label="Simple Search" />
-          <Tab label="Advanced Query" />
-        </Tabs>
+          <NewspaperIcon sx={{ fontSize: 40, color: "primary.main" }} />
+          <Typography
+            variant="h3"
+            fontWeight={700}
+            color="primary.main"
+            sx={{ letterSpacing: "-0.5px" }}
+          >
+            Tìm kiếm Báo chí
+          </Typography>
+        </Box>
+        <Typography variant="body1" color="text.secondary">
+          Tra cứu thông tin từ hàng ngàn bài báo và tin tức
+        </Typography>
+      </Box>
+
+      {/* Search Bar */}
+      <Paper
+        elevation={0}
+        sx={{
+          p: 2,
+          mb: 3,
+          borderRadius: 3,
+          backgroundColor: isDark ? "background.paper" : "#f0f4ff",
+          border: isDark ? "1px solid #374151" : "none",
+          display: "flex",
+          alignItems: "center",
+          gap: 2,
+        }}
+      >
+        <TextField
+          fullWidth
+          placeholder="search query"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          onKeyPress={handleKeyPress}
+          variant="outlined"
+          size="medium"
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon color="action" />
+              </InputAdornment>
+            ),
+          }}
+          sx={{
+            backgroundColor: isDark ? "#0f172a" : "white",
+            borderRadius: 2,
+            "& .MuiOutlinedInput-root": {
+              borderRadius: 2,
+              "& fieldset": {
+                borderColor: isDark ? "#374151" : "#3b82f6",
+              },
+              "&:hover fieldset": {
+                borderColor: isDark ? "#4b5563" : "#2563eb",
+              },
+              "&.Mui-focused fieldset": {
+                borderColor: isDark ? "#60a5fa" : "#1d4ed8",
+              },
+            },
+          }}
+        />
+
+        <FormControl sx={{ minWidth: 140 }}>
+          <Select
+            value={selectedField}
+            onChange={(e) => setSelectedField(e.target.value)}
+            displayEmpty
+            size="medium"
+            sx={{
+              backgroundColor: isDark ? "#0f172a" : "white",
+              borderRadius: 2,
+              "& .MuiOutlinedInput-notchedOutline": {
+                borderColor: isDark ? "#374151" : "#e0e0e0",
+              },
+              "&:hover .MuiOutlinedInput-notchedOutline": {
+                borderColor: isDark ? "#4b5563" : "#bdbdbd",
+              },
+            }}
+          >
+            {FIELD_OPTIONS.map((option) => (
+              <MenuItem key={option.value} value={option.value}>
+                {option.label}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+
+        <Button
+          variant="contained"
+          onClick={handleSearch}
+          disabled={isLoading || !searchQuery.trim()}
+          sx={{
+            minWidth: 120,
+            height: 56,
+            borderRadius: 2,
+            textTransform: "none",
+            fontSize: "1rem",
+            fontWeight: 600,
+          }}
+        >
+          {isLoading ? "Đang tìm..." : "Tìm kiếm"}
+        </Button>
       </Paper>
 
-      {/* Simple Search */}
-      {tab === 0 && (
-        <Stack spacing={2}>
-          <TextField
-            label="Search text"
-            fullWidth
-            variant="outlined"
-            value={params.query}
-            onChange={(e) => setParams({ ...params, query: e.target.value })}
-          />
-          <Button
-            variant="contained"
-            onClick={handleSearch}
-            disabled={isLoading}
-          >
-            {isLoading ? "Searching..." : "Search"}
-          </Button>
-        </Stack>
-      )}
-
-      {/* Advanced Query */}
-      {tab === 1 && (
-        <Box sx={{ mt: 2 }}>
-          {/*<FormControl fullWidth sx={{ mb: 2 }}>*/}
-          {/*  <InputLabel>Model</InputLabel>*/}
-          {/*  <Select*/}
-          {/*    label="Model"*/}
-          {/*    onChange={(e) =>*/}
-          {/*      setParams({ ...params})*/}
-          {/*    }*/}
-          {/*  >*/}
-          {/*    <MenuItem value="match">Match</MenuItem>*/}
-          {/*    <MenuItem value="multi_match">Multi Match</MenuItem>*/}
-          {/*    <MenuItem value="bool">Bool</MenuItem>*/}
-          {/*    <MenuItem value="function_score">Function Score</MenuItem>*/}
-          {/*    <MenuItem value="script_score">Script Score</MenuItem>*/}
-          {/*  </Select>*/}
-          {/*</FormControl>*/}
-
-          <Editor
-            height="300px"
-            defaultLanguage="json"
-            theme="vs-dark"
-            value={dslText}
-            onChange={(value) => setDslText(value ?? "{}")}
-            options={{
-              minimap: { enabled: false },
-              fontSize: 14,
-              automaticLayout: true,
-              scrollbar: { vertical: "hidden" },
-            }}
-          />
-
-          <Button
-            variant="contained"
-            fullWidth
-            sx={{ mt: 2 }}
-            onClick={handleSearch}
-            disabled={isLoading}
-          >
-            {isLoading ? "Running..." : "Run Query"}
-          </Button>
-        </Box>
-      )}
-
+      {/* Error Alert */}
       {error && (
-        <Alert severity="error" sx={{ mt: 3 }}>
-          Failed to search articles. Please check if backend is running.
+        <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>
+          Không thể tìm kiếm bài viết. Vui lòng kiểm tra kết nối backend.
         </Alert>
       )}
 
-      {isLoading && (
-        <Box textAlign="center" mt={3}>
-          <CircularProgress />
+      {/* Results */}
+      <ArticleList
+        articles={articles}
+        loading={isLoading}
+        totalResults={totalResults}
+        searchTime={searchTime}
+      />
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <Box display="flex" justifyContent="center" mt={3}>
+          <Pagination
+            count={totalPages}
+            page={currentPage}
+            onChange={handlePageChange}
+            color="primary"
+            size="large"
+            showFirstButton
+            showLastButton
+            sx={{
+              "& .MuiPaginationItem-root": {
+                borderRadius: 2,
+              },
+            }}
+          />
         </Box>
       )}
-
-      {!isLoading && (
-        <ArticleList
-          articles={articles}
-          loading={isLoading}
-          onArticleClick={handleArticleClick}
-        />
-      )}
-
-      <ArticleModal
-        article={selectedArticle}
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
-      />
     </Container>
   );
-}
-
-function parseDSL(str: string) {
-  try {
-    return JSON.parse(str);
-  } catch {
-    return {};
-  }
 }

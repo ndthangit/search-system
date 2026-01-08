@@ -5,15 +5,23 @@ import {
     Typography,
     CircularProgress,
 } from "@mui/material";
-import Grid from "@mui/material/Grid";
+import AccessTimeIcon from "@mui/icons-material/AccessTime";
 
 interface ArticleListProps {
     articles: Article[];
     loading: boolean;
     onArticleClick?: (article: Article) => void;
+    totalResults?: number;
+    searchTime?: number | null;
 }
 
-export default function ArticleList({ articles, loading, onArticleClick }: ArticleListProps) {
+export default function ArticleList({
+    articles,
+    loading,
+    onArticleClick,
+    totalResults,
+    searchTime,
+}: ArticleListProps) {
     if (loading) {
         return (
             <Box
@@ -25,44 +33,53 @@ export default function ArticleList({ articles, loading, onArticleClick }: Artic
             >
                 <CircularProgress />
                 <Typography variant="body1" sx={{ mt: 2 }}>
-                    Searching articles...
+                    Đang tìm kiếm...
                 </Typography>
             </Box>
         );
     }
 
-    if (articles.length === 0) {
-        return (
-            <Box
-                sx={{
-                    textAlign: "center",
-                    p: 4,
-                    mt: 3,
-                }}
-            >
-                <Typography variant="h6" gutterBottom>
-                    No articles found
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                    Try searching for something else.
-                </Typography>
-            </Box>
-        );
+    if (totalResults === undefined) {
+        return null;
     }
 
     return (
-        <Box mt={3}>
-            <Typography variant="subtitle1" color="text.secondary" mb={2}>
-                Found {articles.length} result{articles.length !== 1 ? "s" : ""}
-            </Typography>
+        <Box>
+            {/* Results Header */}
+            <Box
+                display="flex"
+                justifyContent="space-between"
+                alignItems="center"
+                mb={2}
+            >
+                <Typography variant="body1" color="text.secondary">
+                    Tìm thấy{" "}
+                    <Box component="span" fontWeight={600} color="text.primary">
+                        {totalResults || articles.length}
+                    </Box>{" "}
+                    kết quả
+                </Typography>
 
-            <Grid container spacing={2}>
+                {searchTime !== null && searchTime !== undefined && (
+                    <Box display="flex" alignItems="center" gap={0.5} color="text.secondary">
+                        <AccessTimeIcon sx={{ fontSize: 18 }} />
+                        <Typography variant="body2">
+                            {searchTime}ms
+                        </Typography>
+                    </Box>
+                )}
+            </Box>
+
+            {/* Article List */}
+            <Box>
                 {articles.map((article, index) => (
-                    <Grid key={index} size={{ xs: 12, sm: 6, md: 4 }}>
-                        <ArticleCard article={article} onClick={onArticleClick} />
-                    </Grid>
+                    <ArticleCard
+                        key={article.id || index}
+                        article={article}
+                        onClick={onArticleClick}
+                    />
                 ))}
-            </Grid>
+            </Box>
         </Box>
     );
 }

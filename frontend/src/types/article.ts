@@ -1,29 +1,45 @@
 export interface Article {
-    name: string;
-    abstract: string;
+    id: string;
+    title: string;
+    summary: string;
     url: string;
+    date: string;
+    contents?: string;
+    authors?: string[];
+    category?: string;
+    tags?: string[];
+}
+
+export interface ArticleSource {
+    link: string;
+    title_va: string;
+    title_vska: string;
+    summary_va: string;
+    summary_vska: string;
+    length: number;
+    last_updated: number;
 }
 
 export interface SearchResponse {
-    pageNumber: 0,
-    pageSize: 0,
-    totalElements: 0,
-    totalPages: 0,
-    took: null,
-    maxScore: null,
+    pageNumber: number;
+    pageSize: number;
+    totalElements: number;
+    totalPages: number;
+    took: number | null;
+    maxScore: number | null;
     data: {
-        index: string,
-        id: string,
-        score: null,
-        source: Document,
-    } []
+        index: string;
+        id: string;
+        score: number | null;
+        source: ArticleSource;
+    }[];
 }
 
 export interface SearchParams {
   query: string;
   fields?: string[];
   indexName: string;
-  dsl?: Record<string, any>;
+  dsl?: Record<string, unknown>;
   size?: number;
   page?: number;
 }

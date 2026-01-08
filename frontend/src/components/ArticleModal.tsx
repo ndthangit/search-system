@@ -7,9 +7,11 @@ import {
     Typography,
     Button,
     IconButton,
+    Box,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 
 interface ArticleModalProps {
     article: Article | null;
@@ -19,6 +21,20 @@ interface ArticleModalProps {
 
 export default function ArticleModal({ article, isOpen, onClose }: ArticleModalProps) {
     if (!article) return null;
+
+    function formatDate(dateString: string) {
+        if (!dateString) return "";
+        try {
+            const date = new Date(dateString);
+            return date.toLocaleDateString("vi-VN", {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+            });
+        } catch {
+            return dateString;
+        }
+    }
 
     return (
         <Dialog
@@ -39,7 +55,7 @@ export default function ArticleModal({ article, isOpen, onClose }: ArticleModalP
                     pr: 2,
                 }}
             >
-                {article.name}
+                {article.title}
                 <IconButton onClick={onClose} aria-label="close">
                     <CloseIcon />
                 </IconButton>
@@ -47,25 +63,35 @@ export default function ArticleModal({ article, isOpen, onClose }: ArticleModalP
 
             {/* Body */}
             <DialogContent dividers>
+                {article.date && (
+                    <Box display="flex" alignItems="center" gap={0.5} mb={2} color="text.secondary">
+                        <CalendarTodayIcon sx={{ fontSize: 16 }} />
+                        <Typography variant="body2">
+                            {formatDate(article.date)}
+                        </Typography>
+                    </Box>
+                )}
                 <Typography variant="body1" sx={{ whiteSpace: "pre-line" }}>
-                    {article.abstract || "No content available."}
+                    {article.contents || article.summary || "Không có nội dung."}
                 </Typography>
             </DialogContent>
 
             {/* Footer / Actions */}
             <DialogActions sx={{ p: 2 }}>
                 <Button onClick={onClose} color="inherit">
-                    Close
+                    Đóng
                 </Button>
-                <Button
-                    href={article.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    variant="contained"
-                    endIcon={<OpenInNewIcon />}
-                >
-                    View on Wikipedia
-                </Button>
+                {article.url && (
+                    <Button
+                        href={article.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        variant="contained"
+                        endIcon={<OpenInNewIcon />}
+                    >
+                        Xem bài viết
+                    </Button>
+                )}
             </DialogActions>
         </Dialog>
     );
