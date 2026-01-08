@@ -1,10 +1,6 @@
 import json
-
 from elasticsearch import Elasticsearch
-
-from elastic_custom_template.analysis import AnalysisComponent
-from elastic_custom_template.analyzer import  AnalyzerCustom
-from elastic_custom_template.filter import FilterStop, FilterComponent, Filter, FilterDictionaryDecompounder
+from elastic_custom_template.filter import FilterStop
 
 client = Elasticsearch(
     hosts=["https://localhost:9200"],  # Địa chỉ Elasticsearch
@@ -177,7 +173,6 @@ index_template = {
                     "similarity": "summary_bm25",
                     "type": "text"
                 },
-
                 "length": {
                     "type": "integer"
                 },

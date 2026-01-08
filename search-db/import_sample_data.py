@@ -5,7 +5,7 @@ import pandas as pd
 from elasticsearch import helpers
 from setup import client
 
-data = pd.read_json("data/data.json")
+data = pd.read_json("data/sport_news.jsonl", lines=True, orient="records")
 
 data.head()
 

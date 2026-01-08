@@ -1,11 +1,117 @@
-GET articles-csv/_analyze
+
+
+GET articles-json/_analyze
 {
-  "analyzer": "analyzer-vi-ngram",
+  "analyzer": "vietnamese_analyzer",
   "text": "cộng hòa xã hội chủ nghĩa việt nam"
 }
 
-POST articles-csv/_analyze
+
+GET articles-json/_analyze
+{
+  "analyzer": "vi_shingle_keep_analyzer",
+  "text": "cộng hòa xã hội chủ nghĩa việt nam"
+}
+POST articles-json/_analyze
 {
   "tokenizer": "vi_ngram_tokenizer",
   "text": "cộng hòa xã hội chủ nghĩa việt nam"
 }
+
+GET articles-json/_search
+{
+  "query": {
+    "multi_match": {
+      "query": "Hà Nội",
+      "fields": ["title", "content", "summary"]
+    }
+  }
+}
+
+GET /articles-json/_search
+{
+  "query": {
+    "multi_match": {
+      "query": "bóng đá việt nam",
+      "fields": ["title-va^2", "title-vska^2", "summary-va", "summary-vska"],
+      "type": "best_fields",
+      "tie_breaker": 0.3
+    }
+  },
+  "highlight": {
+    "pre_tags": ["<mark>"],
+    "post_tags": ["</mark>"],
+    "fields": {
+      "title-va": {
+        "number_of_fragments": 1,
+        "fragment_size": 50,
+        "highlight_query": {
+          "match": {
+            "title-va": "bóng đá việt nam"
+          }
+        }
+      },
+      "summary-va": {
+        "number_of_fragments": 2,
+        "fragment_size": 100,
+        "highlight_query": {
+          "match": {
+            "summary-va": "bóng đá việt nam"
+          }
+        }
+      },
+      "content": {
+        "number_of_fragments": 3,
+        "fragment_size": 150,
+        "no_match_size": 150,
+        "highlight_query": {
+          "match": {
+            "content": "bóng đá việt nam"
+          }
+        }
+      }
+    },
+    "order": "score"
+  },
+  "sort": [
+    {
+      "_score": {
+        "order": "desc"
+      }
+    }
+  ],
+  "size": 10,
+  "explain": true
+}
+
+GET /articles*/_search
+{
+  "query": {
+    "multi_match": {
+      "query": "tuyển thủ bóng đá",
+      "fields": [
+        "title-va^2",
+        "title-vska^2",
+        "summary-va",
+        "summary-vska"
+      ],
+      "fuzziness": "AUTO",
+      "type": "best_fields"
+    }
+  },
+  "highlight": {
+    "pre_tags": [
+      "<strong>"
+    ],
+    "post_tags": [
+      "</strong>"
+    ],
+    "fields": {
+      "summary-va": {
+        "fragment_size": 150,
+        "number_of_fragments": 1
+      }
+    }
+  }
+}
+
