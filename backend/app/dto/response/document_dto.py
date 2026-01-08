@@ -1,13 +1,13 @@
-from pydantic import BaseModel
-from typing import List, Any
-import math
+from pydantic import BaseModel, Field
 
 class DocumentDto(BaseModel):
-    url: str   
-    title: str
-    summary: str
-    contents: str
-    date: str           # ISO8601
-    authors: List[str]
-    category: str
-    tags: List[str]
+    link: str
+    title_va: str = Field(alias="title-va")
+    title_vska: str = Field(alias="title-vska")
+    summary_va: str = Field(alias="summary-va")
+    summary_vska: str = Field(alias="summary-vska")
+    length: int
+    last_updated: int
+
+    class Config:
+        allow_population_by_field_name = True
