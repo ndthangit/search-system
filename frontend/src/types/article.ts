@@ -17,7 +17,7 @@ export interface ArticleSource {
     summary_va: string;
     summary_vska: string;
     length: number;
-    last_updated: number;
+    last_updated: string;
 }
 
 export interface SearchResponse {

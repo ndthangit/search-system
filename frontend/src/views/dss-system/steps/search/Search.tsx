@@ -51,7 +51,7 @@ export default function Search() {
       setParams({
         query: searchQuery.trim(),
         fields: selectedField ?? [],
-        indexName: "articles",
+        indexName: "articles-json",
         page: 1,
         size: 10,
       });
@@ -75,10 +75,10 @@ export default function Search() {
   // Transform API response to Article format
   const articles: Article[] =
     data?.data?.map((item) => ({
-      id: item.id,
+      id: item.id || "",
       title: item.source.title_va || item.source.title_vska,
-      summary: item.source.summary_va || item.source.summary_vska,
-      url: item.source.link,
+      summary: item.source.summary_va || "",
+      url: item.source.link || "",
       date: item.source.last_updated
         ? new Date(item.source.last_updated).toISOString()
         : "",

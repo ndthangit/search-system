@@ -80,7 +80,7 @@ async def ping(_):
             "title": str,
             "summary": str,
             "length": int,
-            "last_updated": int
+            "last_updated": str
         }
     },
     required=True,
@@ -128,7 +128,28 @@ async def search_match(request, index_name: str):
         "query": {
             "multi_match": {
                 "query": body.query,
-                "fields": fields
+                "fields": fields,
+                "fuzziness": "AUTO",
+                "type": "best_fields"
+            }
+        },
+        "highlight": {
+            "pre_tags": [
+                "<strong>"
+            ],
+            "post_tags": [
+                "</strong>"
+            ],
+            "fields": {
+                "summary-va": {
+                    "number_of_fragments": 2,
+                    "fragment_size": 50,
+                    "highlight_query": {
+                        "match": {
+                            "summary-va": body.query
+                        }
+                    }
+                }
             }
         },
         "from": (body.page - 1) * body.size,

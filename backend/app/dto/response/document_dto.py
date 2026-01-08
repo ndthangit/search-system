@@ -7,7 +7,7 @@ class DocumentDto(BaseModel):
     summary_va: str = Field(alias="summary-va")
     summary_vska: str = Field(alias="summary-vska")
     length: int
-    last_updated: int
+    last_updated: str
 
     class Config:
         allow_population_by_field_name = True
