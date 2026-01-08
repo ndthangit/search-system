@@ -2,6 +2,7 @@ export interface Article {
     id: string;
     title: string;
     summary: string;
+    summary_vska?: string;
     url: string;
     date: string;
     contents?: string;

@@ -78,6 +78,7 @@ export default function Search() {
       id: item.id || "",
       title: item.source.title_va || item.source.title_vska,
       summary: item.source.summary_va || "",
+      summary_vska: item.source.summary_vska || "",
       url: item.source.link || "",
       date: item.source.last_updated
         ? new Date(item.source.last_updated).toISOString()

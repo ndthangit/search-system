@@ -72,7 +72,7 @@ export default function ArticleModal({ article, isOpen, onClose }: ArticleModalP
                     </Box>
                 )}
                 <Typography variant="body1" sx={{ whiteSpace: "pre-line" }}>
-                    {article.contents || article.summary || "Không có nội dung."}
+                    { article.summary_vska || "Không có nội dung."}
                 </Typography>
             </DialogContent>
 

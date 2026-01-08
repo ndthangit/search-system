@@ -1,3 +1,4 @@
+from typing import Optional
 from sanic import Blueprint
 from sanic.response import json
 from sanic_ext import openapi
@@ -29,6 +30,21 @@ def _expand_search_fields(fields: list[str]) -> list[str]:
             seen.add(field)
             result.append(field)
     return result
+
+
+def build_highlight_summary(hit: dict, field: str) -> Optional[str]:
+    highlight = hit.get("highlight")
+    if not highlight:
+        return None
+
+    fragments = highlight.get(field)
+    if not fragments:
+        return None
+
+    if isinstance(fragments, list):
+        return " ... ".join(fragments)
+
+    return str(fragments)
 
 
 @bp.get("/ping")
@@ -170,6 +186,24 @@ async def search_match(request, index_name: str):
         took = None
         max_score = None
 
+    data = []
+
+    for hit in hits:
+        doc = DocumentDto(**hit["_source"])
+
+        highlight_summary = build_highlight_summary(hit, "summary-va")
+        if highlight_summary:
+            doc.summary_va = highlight_summary   # ghi đè
+
+        data.append(
+            HitResponse(
+                index=hit["_index"],
+                id=hit["_id"],
+                score=hit.get("_score"),
+                source=doc
+            )
+        )
+
     response = SearchResponse(
         pageNumber=body.page,
         pageSize=body.size,
@@ -177,15 +211,7 @@ async def search_match(request, index_name: str):
         totalPages=total_pages,
         took=took,
         maxScore=max_score,
-        data=[
-            HitResponse(
-                index=hit["_index"],
-                id=hit["_id"],
-                score=hit.get("_score"),
-                source=DocumentDto(**hit["_source"])
-            )
-            for hit in hits
-        ]
+        data=data
     )
 
     return json(response.dict())

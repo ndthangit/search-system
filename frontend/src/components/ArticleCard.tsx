@@ -18,12 +18,6 @@ export default function ArticleCard({ article, onClick }: ArticleCardProps) {
     const theme = useTheme();
     const isDark = theme.palette.mode === "dark";
 
-    function truncateSummary(summary: string, maxLength: number = 150) {
-        if (!summary) return "";
-        if (summary.length <= maxLength) return summary;
-        return summary.substring(0, maxLength) + "...";
-    }
-
     function formatDate(dateString: string) {
         if (!dateString) return "";
         try {
@@ -85,14 +79,14 @@ export default function ArticleCard({ article, onClick }: ArticleCardProps) {
             {/* Summary */}
             <Typography
                 variant="body2"
+                component="div"
                 sx={{
                     mb: 2,
                     lineHeight: 1.7,
                     color: "text.secondary",
                 }}
-            >
-                {truncateSummary(article.summary)}
-            </Typography>
+                dangerouslySetInnerHTML={{ __html: article.summary ?? "" }}
+            />
 
             {/* Footer: Date and URL */}
             <Box
