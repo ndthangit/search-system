@@ -184,8 +184,6 @@ index_template = {
                 "last_updated": {
                     "type": "date"
                 }
-
-
             }
         }
 
