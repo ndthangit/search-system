@@ -22,15 +22,15 @@ import ArticleList from "../../../../components/ArticleList.tsx";
 import ThemeToggle from "../../../../components/ThemeToggle.tsx";
 
 const FIELD_OPTIONS = [
-  { value: "", label: "Tất cả" },
-  { value: "title", label: "Tiêu đề" },
-  { value: "link", label: "Đường dẫn" },
-  { value: "summary", label: "Tóm tắt" },
+  { value: ["title", "link", "summary"], label: "Tất cả" },
+  { value: ["title"], label: "Tiêu đề" },
+  { value: ["link"], label: "Đường dẫn" },
+  { value: ["summary"], label: "Tóm tắt" },
 ];
 
 export default function Search() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedField, setSelectedField] = useState("");
+  const [selectedField, setSelectedField] = useState(FIELD_OPTIONS[0].value);
   const [currentPage, setCurrentPage] = useState(1);
   const [params, setParams] = useState<SearchParams>({
     query: "",
@@ -50,7 +50,7 @@ export default function Search() {
       setCurrentPage(1);
       setParams({
         query: searchQuery.trim(),
-        fields: selectedField ? [selectedField] : [],
+        fields: selectedField ?? [],
         indexName: "articles",
         page: 1,
         size: 10,
@@ -169,7 +169,7 @@ export default function Search() {
         <FormControl sx={{ minWidth: 140 }}>
           <Select
             value={selectedField}
-            onChange={(e) => setSelectedField(e.target.value)}
+            onChange={(e) => setSelectedField(e.target.value as string[])}
             displayEmpty
             size="medium"
             sx={{
@@ -184,7 +184,7 @@ export default function Search() {
             }}
           >
             {FIELD_OPTIONS.map((option) => (
-              <MenuItem key={option.value} value={option.value}>
+              <MenuItem key={option.label} value={option.value}>
                 {option.label}
               </MenuItem>
             ))}
