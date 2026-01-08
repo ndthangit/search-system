@@ -179,16 +179,45 @@ services:
       timeout: 10s
       retries: 120
 
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: search-backend
+    networks:
+      - search-system
+    ports:
+      - 8080:8080
+    environment:
+      - ELASTICSEARCH_HOST=https://es01:9200
+      - ELASTICSEARCH_USERNAME=elastic
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+      - ELASTICSEARCH_CA_CERT=/app/certs/ca/ca.crt
+    volumes:
+      - certs:/app/certs:ro
+    depends_on:
+      es01:
+        condition: service_healthy
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: search-frontend
+    networks:
+      - search-system
+    ports:
+      - 5173:5173
+    depends_on:
+      - backend
+    restart: unless-stopped
+
 networks:
   search-system:
     driver: bridge
 
 volumes:
   certs:
-    driver: local
   esdata01:
-    driver: local
   kibanadata:
-    driver: local
-  semanticdata:
-    driver: local
