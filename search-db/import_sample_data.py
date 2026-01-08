@@ -24,13 +24,13 @@ batch_size = 5
 actions = []
 
 
-count =0
+# count =0
 for index, row in data.iterrows():
 
-    if count >10:
-        break
-
-    count +=1
+    # if count >10:
+    #     break
+    #
+    # count +=1
 
     # Prepare ES document
     es_doc = {
