@@ -1,4 +1,4 @@
-data/stop_word.txt
+#data/stop_word.txt
 models
 ca.crt
 
