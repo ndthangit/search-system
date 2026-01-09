@@ -44,7 +44,7 @@ class Config:
     API_CONTACT_EMAIL = os.getenv('API_CONTACT_EMAIL', 'example@gmail.com')
 
 class ElasticSearchConfig:
-    HOST = os.getenv('ELASTICSEARCH_HOST', 'https://es01:9200')
+    HOST = os.getenv('ELASTICSEARCH_HOST', 'http://localhost:9200')
     USERNAME = os.getenv('ELASTICSEARCH_USERNAME', 'elastic')
     PASSWORD = os.getenv('ELASTIC_PASSWORD', 'elastic')
     CA_CERT_PATH = os.getenv('ELASTICSEARCH_CA_CERT', '/app/certs/ca/ca.crt')

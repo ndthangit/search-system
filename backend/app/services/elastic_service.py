@@ -40,5 +40,8 @@ class ElasticService:
     #         }
     #     )
 
+    async def delete_doc(self, index: str, doc_id: str):
+        await self.client.delete(index=index, id=doc_id, ignore=[404])
+
     async def close(self):
         await self.client.close()

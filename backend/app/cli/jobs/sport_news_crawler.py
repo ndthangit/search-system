@@ -10,7 +10,7 @@ from cli_scheduler import AsyncSchedulerJob
 @click.command(context_settings=dict(help_option_names=["-h", "--help"]))
 @click.option(
     "--scheduler",
-    default="^true@60",
+    default="^true@3600",
     show_default=True,
     type=str,
     help=f'Scheduler with format "{scheduler_format}"',
@@ -34,3 +34,6 @@ class SportNewsCrawler(AsyncSchedulerJob):
             "-L",
             "INFO"
         ])
+
+if __name__ == "__main__":
+    sport_news_crawler()

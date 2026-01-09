@@ -3,10 +3,10 @@ from elasticsearch import Elasticsearch
 from elastic_custom_template.filter import FilterStop
 
 client = Elasticsearch(
-    hosts=["https://localhost:9200"],  # Địa chỉ Elasticsearch
+    hosts=["http://localhost:9200"],  # Địa chỉ Elasticsearch
     basic_auth=("elastic", "elastic"),
     request_timeout=60,
-    ca_certs="./ca.crt"
+    # ca_certs="./ca.crt"
 )
 client.info()
 
