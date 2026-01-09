@@ -40,8 +40,8 @@ for index, row in data.iterrows():
             "link": row['link'],
             "title-va": row['title'],
             "title-vska": row['title'],
-            "summary-va": row['summary'],
-            "summary-vska": row['summary'],
+            "content-va": row['summary'],
+            "content-vska": row['summary'],
             "length": 200,
             "last_updated": row['last_updated']
 

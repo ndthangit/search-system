@@ -163,12 +163,12 @@ index_template = {
                     "similarity": "title_bm25",
                     "type": "text"
                 },
-                "summary-vska": {
+                "content-vska": {
                     "analyzer": "vi_shingle_keep_analyzer",
                     "similarity": "summary_bm25",
                     "type": "text"
                 },
-                "summary-va": {
+                "content-va": {
                     "analyzer": "vietnamese_analyzer",
                     "similarity": "summary_bm25",
                     "type": "text"
