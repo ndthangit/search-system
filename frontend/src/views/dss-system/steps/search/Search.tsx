@@ -22,10 +22,10 @@ import ArticleList from "../../../../components/ArticleList.tsx";
 import ThemeToggle from "../../../../components/ThemeToggle.tsx";
 
 const FIELD_OPTIONS = [
-  { value: ["title", "link", "summary"], label: "Tất cả" },
+  { value: ["title", "link", "content"], label: "Tất cả" },
   { value: ["title"], label: "Tiêu đề" },
   { value: ["link"], label: "Đường dẫn" },
-  { value: ["summary"], label: "Tóm tắt" },
+  { value: ["content"], label: "Nội dung" },
 ];
 
 export default function Search() {
@@ -77,8 +77,8 @@ export default function Search() {
     data?.data?.map((item) => ({
       id: item.id || "",
       title: item.source.title_va || item.source.title_vska,
-      summary: item.source.summary_va || "",
-      summary_vska: item.source.summary_vska || "",
+      content: item.source.content_va || "",
+      content_vska: item.source.content_vska || "",
       url: item.source.link || "",
       date: item.source.last_updated
         ? new Date(item.source.last_updated).toISOString()

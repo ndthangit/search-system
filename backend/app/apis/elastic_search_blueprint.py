@@ -18,8 +18,8 @@ def _expand_search_fields(fields: list[str]) -> list[str]:
     for field in fields:
         if field == "title":
             expanded.extend(["title-va", "title-vska"])
-        elif field == "summary":
-            expanded.extend(["summary-va", "summary-vska"])
+        elif field == "content":
+            expanded.extend(["content-va", "content-vska"])
         else:
             expanded.append(field)
 
@@ -94,7 +94,7 @@ async def ping(_):
             "id": str,
             "link": str,
             "title": str,
-            "summary": str,
+            "content": str,
             "length": int,
             "last_updated": str
         }
@@ -108,13 +108,13 @@ async def index_data(request, index_name: str):
 
     link = data.get("link")
     title = data.get("title")
-    summary = data.get("summary")
+    content = data.get("content")
     body = {
         "link": link,
         "title-va": title,
         "title-vska": title,
-        "summary-va": summary,
-        "summary-vska": summary,
+        "content-va": content,
+        "content-vska": content,
         "length": data.get("length"),
         "last_updated": data.get("last_updated"),
     }
@@ -157,12 +157,12 @@ async def search_match(request, index_name: str):
                 "</strong>"
             ],
             "fields": {
-                "summary-va": {
+                "content-va": {
                     "number_of_fragments": 2,
                     "fragment_size": 50,
                     "highlight_query": {
                         "match": {
-                            "summary-va": body.query
+                            "content-va": body.query
                         }
                     }
                 }
@@ -191,9 +191,9 @@ async def search_match(request, index_name: str):
     for hit in hits:
         doc = DocumentDto(**hit["_source"])
 
-        highlight_summary = build_highlight_summary(hit, "summary-va")
+        highlight_summary = build_highlight_summary(hit, "content-va")
         if highlight_summary:
-            doc.summary_va = highlight_summary   # ghi đè
+            doc.content_va = highlight_summary   # ghi đè
 
         data.append(
             HitResponse(

@@ -4,8 +4,8 @@ class DocumentDto(BaseModel):
     link: str
     title_va: str = Field(alias="title-va")
     title_vska: str = Field(alias="title-vska")
-    summary_va: str = Field(alias="summary-va")
-    summary_vska: str = Field(alias="summary-vska")
+    content_va: str = Field(alias="content-va")
+    content_vska: str = Field(alias="content-vska")
     length: int
     last_updated: str
 

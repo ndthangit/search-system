@@ -85,7 +85,7 @@ export default function ArticleCard({ article, onClick }: ArticleCardProps) {
                     lineHeight: 1.7,
                     color: "text.secondary",
                 }}
-                dangerouslySetInnerHTML={{ __html: article.summary ?? "" }}
+                dangerouslySetInnerHTML={{ __html: article.content ?? "" }}
             />
 
             {/* Footer: Date and URL */}
