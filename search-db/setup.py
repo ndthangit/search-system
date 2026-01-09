@@ -46,7 +46,7 @@ index_template = {
                     "b": 0.3,    # Tiêu đề thường ngắn nên b nhỏ
                     "k1": 1.5    # Tăng trọng số cho tiêu đề
                 },
-                "summary_bm25": {
+                "content_bm25": {
                     "type": "BM25",
                     "b": 0.75,
                     "k1": 1.2
@@ -165,12 +165,12 @@ index_template = {
                 },
                 "content-vska": {
                     "analyzer": "vi_shingle_keep_analyzer",
-                    "similarity": "summary_bm25",
+                    "similarity": "content_bm25",
                     "type": "text"
                 },
                 "content-va": {
                     "analyzer": "vietnamese_analyzer",
-                    "similarity": "summary_bm25",
+                    "similarity": "content_bm25",
                     "type": "text"
                 },
                 "length": {
