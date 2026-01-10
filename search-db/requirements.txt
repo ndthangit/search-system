@@ -2,3 +2,4 @@ elasticsearch~=8.19.1
 pandas~=2.3.2
 kagglehub~=0.3.13
 datasets~=4.4.1
+huggingface_hub

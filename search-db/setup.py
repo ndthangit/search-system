@@ -1,12 +1,11 @@
 import json
+import os
 from elasticsearch import Elasticsearch
 from elastic_custom_template.filter import FilterStop
 
 client = Elasticsearch(
-    hosts=["http://localhost:9200"],  # Địa chỉ Elasticsearch
-    basic_auth=("elastic", "elastic"),
+    hosts=[os.getenv('ELASTICSEARCH_HOST', 'http://localhost:9200')],
     request_timeout=60,
-    # ca_certs="./ca.crt"
 )
 client.info()
 
