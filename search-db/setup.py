@@ -129,8 +129,7 @@ index_template = {
                             "vi_stopwords",
                             "lowercase",
                             "asciifolding",
-                            "vn_number_mapper",
-                            "synonym_sports"
+                            "vn_number_mapper"
                         ],
                         "char_filter": [
                             "number_mapping"
@@ -144,6 +143,19 @@ index_template = {
                         ],
                         "filter": [
                             "lowercase",
+                            "my_shingle_filter",
+                            "keep_words_filter"
+                        ]
+                    },
+                    "vi_shingle_keep_search_analyzer": {
+                        "type": "custom",
+                        "tokenizer": "standard",
+                        "char_filter": [
+                            "number_mapping"
+                        ],
+                        "filter": [
+                            "lowercase",
+                            "synonym_sports",
                             "my_shingle_filter",
                             "keep_words_filter"
                         ]
@@ -164,11 +176,13 @@ index_template = {
                 },
                 "title-vska" :{
                     "analyzer": "vi_shingle_keep_analyzer",
+                    "search_analyzer": "vi_shingle_keep_search_analyzer",
                     "similarity": "title_bm25",
                     "type": "text"
                 },
                 "content-vska": {
                     "analyzer": "vi_shingle_keep_analyzer",
+                    "search_analyzer": "vi_shingle_keep_search_analyzer",
                     "similarity": "content_bm25",
                     "type": "text"
                 },
