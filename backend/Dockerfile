@@ -8,14 +8,9 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    gcc \
-    libffi-dev \
-    && rm -rf /var/lib/apt/lists/*
-
 COPY requirements.txt .
 
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt supervisor
 
 COPY . .
 
@@ -27,4 +22,4 @@ ENV SERVER_HOST=0.0.0.0 \
     SERVER_NAME=http://localhost:8080 \
     DEBUG=False
 
-CMD ["python", "main.py"]
+CMD ["supervisord", "-c", "supervisord.conf"]
