@@ -5,7 +5,12 @@ from elastic_custom_template.filter import FilterStop
 
 client = Elasticsearch(
     hosts=[os.getenv('ELASTICSEARCH_HOST', 'http://localhost:9200')],
-    request_timeout=60,
+    basic_auth=(
+        os.getenv('ELASTICSEARCH_USERNAME', 'elastic'),
+        os.getenv('ELASTIC_PASSWORD', 'elastic'),
+    ),
+    verify_certs=False,
+    ssl_show_warn=False
 )
 client.info()
 
