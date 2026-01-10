@@ -100,6 +100,8 @@ services:
       - search-system
     environment:
       - ELASTICSEARCH_HOST=http://es01:9200
+      - ELASTICSEARCH_USERNAME=elastic
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
     depends_on:
       es01:
         condition: service_healthy
