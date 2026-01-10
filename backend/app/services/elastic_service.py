@@ -11,7 +11,9 @@ class ElasticService:
             basic_auth=(
                 ElasticSearchConfig.USERNAME,
                 ElasticSearchConfig.PASSWORD
-            )
+            ),
+            verify_certs=False,
+            ssl_show_warn=False
         )
 
     async def ping(self) -> bool:
