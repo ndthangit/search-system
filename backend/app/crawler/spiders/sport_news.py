@@ -2,22 +2,30 @@ import json
 import os
 import re
 import scrapy
+import hashlib
 
 from datetime import datetime, timezone
 from email.utils import parsedate_to_datetime
 from twisted.internet import defer
 from scrapy import signals
+from random import sample
+from datetime import timedelta
 
 from app.services.scrapy_es_adapter import ScrapyElasticAdapter
 
 STATE_FILE = "data/state.json"
 ES_INDEX = "articles-json"
+RANDOM_CHECK_SIZE = 30
+RANDOM_CHECK_DAYS = 1
 
 def extract_article_id(link: str) -> str:
     match = re.search(r"(\d{17})\.htm", link)
     if match:
         return match.group(1)
     return link
+
+def hash_content(text: str) -> str:
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
 class SportNewsSpider(scrapy.Spider):
@@ -30,7 +38,7 @@ class SportNewsSpider(scrapy.Spider):
         self.es_service = ScrapyElasticAdapter()
         self.last_pub_ts = None
         self.max_pub_ts = None
-        self.existing_docs = {}  # doc_id -> {doc_id, content_length}
+        self.existing_docs = {}
         self.validation_complete = False
 
         # Load state
@@ -56,7 +64,7 @@ class SportNewsSpider(scrapy.Spider):
                 ES_INDEX,
                 {
                     "query": {"match_all": {}},
-                    "size": 10000,
+                    "size": 1000000,
                     "_source": ["link", "content"]
                 }
             )
@@ -71,40 +79,101 @@ class SportNewsSpider(scrapy.Spider):
                 req = scrapy.Request(
                     url=link,
                     method="HEAD",
-                    callback=self._head_check,
                     errback=self._head_err,
                     meta={"doc_id": doc_id},
                     dont_filter=True
                 )
 
-                # Chỉ gọi crawl mà không cần spider=...
                 self.crawler.engine.crawl(req)
 
         except Exception as e:
             self.logger.error(f"ES validation failed: {e}")
 
+        await self._random_check_update()
+
         self.validation_complete = True
         self.logger.info("ES validation complete")
 
-    def _head_check(self, response):
-        doc_id = response.meta.get("doc_id", extract_article_id(response.url))
-        content_length_header = response.headers.get("Content-Length")
-        try:
-            content_length = int(content_length_header) if content_length_header else None
-        except ValueError:
-            content_length = None
-
-        self.existing_docs[doc_id] = {
-            "doc_id": doc_id,
-            "content_length": content_length
-        }
-        self.logger.debug(f"Link alive: {response.url}, content-length={content_length}")
-
+   # delete if link not reachable
     def _head_err(self, failure):
         doc_id = failure.request.meta["doc_id"]
         self.logger.info(f"Dead link detected, deleting ES doc: {doc_id}")
         d = defer.ensureDeferred(self.es_service.delete_doc(ES_INDEX, doc_id))
         return d
+
+    #get some random links and get content to check update
+    async def _random_check_update(self):
+        self.logger.info("Start random_check_update")
+
+        threshold = datetime.now(timezone.utc) - timedelta(days=RANDOM_CHECK_DAYS)
+
+        result = await self.es_service.search_match(
+            ES_INDEX,
+            {
+                "query": {
+                    "range": {
+                        "last_updated": {
+                            "lt": threshold.isoformat()
+                        }
+                    }
+                },
+                "size": 10000,
+                "_source": ["link", "content_hash", "last_updated"]
+            }
+        )
+
+        hits = result.get("hits", {}).get("hits", [])
+        if not hits:
+            self.logger.info("No docs eligible for random check")
+            return
+
+        candidates = sample(
+            hits,
+            min(RANDOM_CHECK_SIZE, len(hits))
+        )
+
+        self.logger.info(f"Random check {len(candidates)} documents")
+
+        for hit in candidates:
+            src = hit["_source"]
+            doc_id = hit["_id"]
+
+            req = scrapy.Request(
+                url=src["link"],
+                callback=self._parse_check_update,
+                meta={
+                    "doc_id": doc_id,
+                    "old_hash": src.get("content_hash"),
+                },
+                dont_filter=True
+            )
+
+            self.crawler.engine.crawl(req)
+
+    def _parse_check_update(self, response):
+        doc_id = response.meta["doc_id"]
+        old_hash = response.meta["old_hash"]
+
+        paragraphs = response.css("article.singular-container p::text").getall()
+        content_text = " ".join(p.strip() for p in paragraphs if p.strip())
+        new_hash = hash_content(content_text)
+
+        if new_hash == old_hash:
+            self.logger.info(f"[NO CHANGE] {doc_id}")
+            return
+
+        self.logger.info(f"[UPDATED] {doc_id}")
+
+        item = {
+            "doc_id": doc_id,
+            "content": content_text,
+            "content_hash": new_hash,
+            "last_updated": datetime.now(timezone.utc).isoformat()
+        }
+
+        defer.ensureDeferred(
+            self.es_service.index_data(ES_INDEX, doc_id, item)
+        )
 
     def start_requests(self):
         yield scrapy.Request(self.start_urls[0], callback=self.parse, dont_filter=True)
@@ -115,15 +184,22 @@ class SportNewsSpider(scrapy.Spider):
             return
 
         for item in response.xpath("//item"):
-
             pub_raw = item.xpath("pubDate/text()").get()
             if not pub_raw:
                 continue
+
             pub_ts = parsedate_to_datetime(pub_raw).astimezone(timezone.utc)
+
+            if self.last_pub_ts and pub_ts <= self.last_pub_ts:
+                self.logger.debug(
+                    f"Skip old article: {pub_ts.isoformat()} <= {self.last_pub_ts.isoformat()}"
+                )
+                continue
 
             link = item.xpath("link/text()").get()
             title = item.xpath("title/text()").get()
             description = item.xpath("description/text()").get()
+
             if not link or not title:
                 continue
 
@@ -144,21 +220,20 @@ class SportNewsSpider(scrapy.Spider):
 
     def parse_detail(self, response):
         doc_id = extract_article_id(response.meta["link"])
-        content_bytes = response.body
-        length_bytes_raw = len(content_bytes)
 
         paragraphs = response.css("article.singular-container p::text").getall()
         content_text = " ".join(p.strip() for p in paragraphs if p.strip())
+        full_content = response.meta["summary"] + content_text
 
         item = {
             "doc_id": doc_id,
             "title": response.meta["title"],
             "link": response.meta["link"],
             "summary": response.meta["summary"],
-            "content": content_text + response.meta["summary"],
+            "content": full_content,
+            "content_hash": hash_content(full_content),
             "last_updated": response.meta["pub_ts"],
             "pub_ts": response.meta["pub_ts"],
-            "length": length_bytes_raw
         }
 
         defer.ensureDeferred(self._index_es(item))
@@ -166,29 +241,9 @@ class SportNewsSpider(scrapy.Spider):
 
     def _index_es(self, item):
         doc_id = item["doc_id"]
-
-        old = self.existing_docs.get(doc_id)
-
-        # Nếu content_length giống, skip
-        if old and old["content_length"] == item["length"]:
-            self.logger.info(f"Skip unchanged: {doc_id}")
-            return defer.succeed(None)
-
-        if old:
-            item["updated_at"] = datetime.utcnow().isoformat()
-            self.logger.info(f"Update ES: {doc_id}")
-        else:
-            self.logger.info(f"New ES doc: {doc_id}")
+        self.logger.info(f"New ES doc: {doc_id}")
 
         d = self.es_service.index_data(ES_INDEX, doc_id, item)
-
-        def _done(_):
-            self.existing_docs[doc_id] = {
-                "doc_id": doc_id,
-                "content_length": item["length"]
-            }
-
-        d.addCallback(_done)
         return d
 
     def closed(self, reason):
@@ -198,7 +253,6 @@ class SportNewsSpider(scrapy.Spider):
                 json.dump(
                     {
                         "last_pub_ts": self.max_pub_ts.isoformat(),
-                        "updated_at": datetime.utcnow().isoformat(),
                     },
                     f,
                     indent=2,
