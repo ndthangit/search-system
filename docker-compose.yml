@@ -74,7 +74,8 @@ services:
       - ELASTICSEARCH_USERNAME=elastic
       - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
     depends_on:
-      - search_db
+      search_db:
+        condition: service_completed_successfully
     restart: unless-stopped
 
   frontend:
@@ -102,7 +103,7 @@ services:
     depends_on:
       es01:
         condition: service_healthy
-    restart: unless-stopped
+    restart: no
 
 networks:
   search-system:
