@@ -6,18 +6,7 @@ from config import ElasticSearchConfig
 
 class ElasticService:
     def __init__(self, host: str = ElasticSearchConfig.HOST):
-        ca_cert = ElasticSearchConfig.CA_CERT_PATH
-        use_ssl = host.startswith('https') and os.path.exists(ca_cert)
-
-        if use_ssl:
-            self.client = AsyncElasticsearch(
-                hosts=[host],
-                basic_auth=(ElasticSearchConfig.USERNAME, ElasticSearchConfig.PASSWORD),
-                ca_certs=ca_cert,
-                verify_certs=True
-            )
-        else:
-            self.client = AsyncElasticsearch(hosts=[host])
+        self.client = AsyncElasticsearch(hosts=[host])
 
     async def ping(self) -> bool:
         return await self.client.ping()
