@@ -68,15 +68,7 @@ index_template = {
                         "pattern": "(\\d+) (\\d+)",
                         "replacement": "$1$2"
                       },
-                    "synonym_sports": {
-                      "type": "synonym",
-                      "synonyms": [
-                        "bóng đá => thể thao bóng đá, bóng đá sân cỏ, bóng đá chuyên nghiệp, đá bóng, thi đấu bóng, chơi bóng",
-                        "thể thao => vận động, động lực thể chất, kỹ năng thể chất, kỹ năng thể thao, thể thao chuyên nghiệp, năng động, chuyên nghiệp, sức mạnh",
-                        "thi đấu => tham gia thi đấu, đấu tranh, đấu cuộc, trận đấu, cuộc thi, giải đấu, cạnh tranh, quyết liệt, nhiệt huyết, trận thi"
-                      ],
-                      "expand": "true"
-                    },
+
                     "my_shingle_filter": {
                       "type": "shingle",
                       "min_shingle_size": 2,
@@ -144,20 +136,8 @@ index_template = {
                         "filter": [
                             "lowercase",
                             "my_shingle_filter",
-                            "keep_words_filter"
-                        ]
-                    },
-                    "vi_shingle_keep_search_analyzer": {
-                        "type": "custom",
-                        "tokenizer": "standard",
-                        "char_filter": [
-                            "number_mapping"
-                        ],
-                        "filter": [
-                            "lowercase",
-                            "synonym_sports",
-                            "my_shingle_filter",
-                            "keep_words_filter"
+                            "keep_words_filter",
+                            "vi_stopwords"
                         ]
                     }
                   }
@@ -176,13 +156,11 @@ index_template = {
                 },
                 "title-vska" :{
                     "analyzer": "vi_shingle_keep_analyzer",
-                    "search_analyzer": "vi_shingle_keep_search_analyzer",
                     "similarity": "title_bm25",
                     "type": "text"
                 },
                 "content-vska": {
                     "analyzer": "vi_shingle_keep_analyzer",
-                    "search_analyzer": "vi_shingle_keep_search_analyzer",
                     "similarity": "content_bm25",
                     "type": "text"
                 },
@@ -193,6 +171,9 @@ index_template = {
                 },
                 "length": {
                     "type": "integer"
+                },
+                "pub_ts":{
+                    "type": "date"
                 },
                 "last_updated": {
                     "type": "date"
