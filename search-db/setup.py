@@ -66,8 +66,44 @@ index_template = {
                     "vn_number_mapper": {
                         "type": "pattern_replace",
                         "pattern": "(\\d+) (\\d+)",
-                        "replacement": "$1$2"
+                        "replacement": "$1-$2"
                       },
+                    "my_synonym_filter": {
+                      "type": "synonym",
+                      "synonyms": [
+                        # Thể thao chung
+                        "thể thao, sport, thể dục",
+                        "vận động viên, vđv, cầu thủ, siêu sao",
+                        "trận đấu, trận, cuộc đọ sức, thi đấu",
+                         # Bóng đá
+
+                        "đá bóng,  bóng đá, túc cầu",
+                        "sân vận động, sân cỏ, svd",
+                        "huấn luyện viên, hlv",
+                        "trọng tài, vua áo đen",
+                        "vô địch, quán quân",
+                         # Các môn khác
+                        "bơi lội, bơi",
+                        "thể hình, gym",
+                        "điền kinh, chạy bộ"
+                      ]
+                    },
+                    "number_synonym_filter": {
+                        "type": "synonym",
+                        "synonyms": [
+                            "không => 0",
+                            "một, mốt => 1",
+                            "hai => 2",
+                            "ba => 3",
+                            "bốn, tư => 4",
+                            "năm, lăm, nhăm => 5",
+                            "sáu => 6",
+                            "bảy => 7",
+                            "tám => 8",
+                            "chín => 9",
+                            "mười, mươi, chục => 0"
+                        ]
+                    },
 
                     "my_shingle_filter": {
                       "type": "shingle",
@@ -80,68 +116,35 @@ index_template = {
                         "keep_words": df['word'].dropna().tolist()
                     }
                 },
-                "char_filter": {
-                  "number_mapping": {
-                    "type": "mapping",
-                    "mappings": [
-                      "không => 0",
-                      "một => 1",
-                      "mốt => 1",
-                      "hai => 2",
-                      "ba => 3",
-                      "bốn => 4",
-                      "tư => 4",
-                      "năm => 5",
-                      "lăm => 5",
-                      "nhăm => 5",
-                      "sáu => 6",
-                      "bảy => 7",
-                      "tám => 8",
-                      "chín => 9",
-                      "mười => _10",
-                        "mươi => _10",
-                      "chục => _10",
-                      "trăm => _100",
-                      "nghìn => _1000",
-                      "ngàn => _1000",
-                      "vạn => _10000",
-                      "triệu => _1000000",
-                      "tỉ => _1000000000",
-                      "lẻ => .",
-                      "linh => ."
 
-                    ]
-                  }
-                },
                 "analyzer": {
                     "vietnamese_analyzer": {
                         "type": "custom",
                         "tokenizer": "standard",
                         "filter": [
-                            "vi_stopwords",
                             "lowercase",
+                            "number_synonym_filter",
+                            "vn_number_mapper",
+                            "vi_stopwords",
                             "asciifolding",
-                            "vn_number_mapper"
-                        ],
-                        "char_filter": [
-                            "number_mapping"
+                            "my_shingle_filter",
                         ]
+
                     },
-                    "vi_shingle_keep_analyzer": {
+                    "vietnamese_search_analyzer": {
                         "type": "custom",
                         "tokenizer": "standard",
-                        "char_filter": [
-                            "number_mapping"
-                        ],
                         "filter": [
                             "lowercase",
+                            "number_synonym_filter",
+                            "vi_stopwords",
+                            "my_synonym_filter",
+                            "asciifolding",
                             "my_shingle_filter",
-                            "keep_words_filter",
-                            "vi_stopwords"
+                            "remove_duplicates"
                         ]
                     }
-                  }
-
+                }
             }
         },
         "mappings": {
@@ -151,27 +154,18 @@ index_template = {
                 },
                 "title-va": {
                     "analyzer": "vietnamese_analyzer",
+                    "search_analyzer": "vietnamese_search_analyzer",
                     "similarity": "title_bm25",
                     "type": "text"
                 },
-                "title-vska" :{
-                    "analyzer": "vi_shingle_keep_analyzer",
-                    "similarity": "title_bm25",
-                    "type": "text"
-                },
-                "content-vska": {
-                    "analyzer": "vi_shingle_keep_analyzer",
-                    "similarity": "content_bm25",
-                    "type": "text"
-                },
+
                 "content-va": {
                     "analyzer": "vietnamese_analyzer",
+                    "search_analyzer": "vietnamese_search_analyzer",
                     "similarity": "content_bm25",
                     "type": "text"
                 },
-                "length": {
-                    "type": "integer"
-                },
+
                 "pub_ts":{
                     "type": "date"
                 },
