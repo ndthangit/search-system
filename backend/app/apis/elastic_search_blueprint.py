@@ -13,24 +13,25 @@ bp = Blueprint("elastic_search", url_prefix="/elastic_search")
 
 es_service = ElasticService()
 
-def _expand_search_fields(fields: list[str]) -> list[str]:
-    expanded: list[str] = []
-    for field in fields:
-        if field == "title":
-            expanded.extend(["title-va", "title-vska"])
-        elif field == "content":
-            expanded.extend(["content-va", "content-vska"])
-        else:
-            expanded.append(field)
-
-    seen: set[str] = set()
-    result: list[str] = []
-    for field in expanded:
-        if field not in seen:
-            seen.add(field)
-            result.append(field)
-    return result
-
+def _expand_search_fields(fields: list) -> list:
+    """
+    Expand search fields from simplified names to Elasticsearch field names.
+    
+    Args:
+        fields: List of field names ('title', 'content')
+    
+    Returns:
+        List of Elasticsearch field names with optional boosting
+    """
+    if not fields:
+        return ["content-va^3", "title-va"]
+    
+    mapping = {
+        "title": "title-va",
+        "content": "content-va"
+    }
+    
+    return [mapping[field] for field in fields if field in mapping]
 
 def build_highlight_summary(hit: dict, field: str) -> Optional[str]:
     highlight = hit.get("highlight")
@@ -112,9 +113,7 @@ async def index_data(request, index_name: str):
     body = {
         "link": link,
         "title-va": title,
-        "title-vska": title,
         "content-va": content,
-        "content-vska": content,
         "length": data.get("length"),
         "last_updated": data.get("last_updated"),
     }
