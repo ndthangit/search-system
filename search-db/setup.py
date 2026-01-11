@@ -141,7 +141,6 @@ index_template = {
                             "vi_stopwords",
                             "my_synonym_filter",
                             "asciifolding",
-                            "remove_duplicates"
                         ]
                     }
                 }
