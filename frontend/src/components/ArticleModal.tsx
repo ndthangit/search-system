@@ -71,9 +71,6 @@ export default function ArticleModal({ article, isOpen, onClose }: ArticleModalP
                         </Typography>
                     </Box>
                 )}
-                <Typography variant="body1" sx={{ whiteSpace: "pre-line" }}>
-                    { article.content_vska || "Không có nội dung."}
-                </Typography>
             </DialogContent>
 
             {/* Footer / Actions */}

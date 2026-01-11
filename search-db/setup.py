@@ -5,7 +5,12 @@ from elastic_custom_template.filter import FilterStop
 
 client = Elasticsearch(
     hosts=[os.getenv('ELASTICSEARCH_HOST', 'http://localhost:9200')],
-    request_timeout=60,
+    basic_auth=(
+        os.getenv('ELASTICSEARCH_USERNAME', 'elastic'),
+        os.getenv('ELASTIC_PASSWORD', 'elastic'),
+    ),
+    verify_certs=False,
+    ssl_show_warn=False
 )
 client.info()
 
@@ -61,17 +66,45 @@ index_template = {
                     "vn_number_mapper": {
                         "type": "pattern_replace",
                         "pattern": "(\\d+) (\\d+)",
-                        "replacement": "$1$2"
+                        "replacement": "$1-$2"
                       },
-                    "synonym_sports": {
-                      "type": "synonym",
+                    "my_synonym_filter": {
+                      "type": "synonym_graph",
                       "synonyms": [
-                        "bóng đá => thể thao bóng đá, bóng đá sân cỏ, bóng đá chuyên nghiệp, đá bóng, thi đấu bóng, chơi bóng",
-                        "thể thao => vận động, động lực thể chất, kỹ năng thể chất, kỹ năng thể thao, thể thao chuyên nghiệp, năng động, chuyên nghiệp, sức mạnh",
-                        "thi đấu => tham gia thi đấu, đấu tranh, đấu cuộc, trận đấu, cuộc thi, giải đấu, cạnh tranh, quyết liệt, nhiệt huyết, trận thi"
-                      ],
-                      "expand": "true"
+                        # Thể thao chung
+                        "thể thao, sport, thể dục",
+                        "vận động viên, vđv, cầu thủ, siêu sao",
+                        "trận đấu, trận, cuộc đọ sức, thi đấu",
+                         # Bóng đá
+
+                        "đá bóng, bóng đá, túc cầu",
+                        "sân vận động, sân cỏ, svd",
+                        "huấn luyện viên, hlv",
+                        "trọng tài, vua áo đen",
+                        "vô địch, quán quân",
+                         # Các môn khác
+                        "bơi lội, bơi",
+                        "thể hình, gym",
+                        "điền kinh, chạy bộ"
+                      ]
                     },
+                    "number_synonym_filter": {
+                        "type": "synonym",
+                        "synonyms": [
+                            "không => 0",
+                            "một, mốt => 1",
+                            "hai => 2",
+                            "ba => 3",
+                            "bốn, tư => 4",
+                            "năm, lăm, nhăm => 5",
+                            "sáu => 6",
+                            "bảy => 7",
+                            "tám => 8",
+                            "chín => 9",
+                            "mười, mươi, chục => 0"
+                        ]
+                    },
+
                     "my_shingle_filter": {
                       "type": "shingle",
                       "min_shingle_size": 2,
@@ -83,68 +116,34 @@ index_template = {
                         "keep_words": df['word'].dropna().tolist()
                     }
                 },
-                "char_filter": {
-                  "number_mapping": {
-                    "type": "mapping",
-                    "mappings": [
-                      "không => 0",
-                      "một => 1",
-                      "mốt => 1",
-                      "hai => 2",
-                      "ba => 3",
-                      "bốn => 4",
-                      "tư => 4",
-                      "năm => 5",
-                      "lăm => 5",
-                      "nhăm => 5",
-                      "sáu => 6",
-                      "bảy => 7",
-                      "tám => 8",
-                      "chín => 9",
-                      "mười => _10",
-                        "mươi => _10",
-                      "chục => _10",
-                      "trăm => _100",
-                      "nghìn => _1000",
-                      "ngàn => _1000",
-                      "vạn => _10000",
-                      "triệu => _1000000",
-                      "tỉ => _1000000000",
-                      "lẻ => .",
-                      "linh => ."
 
-                    ]
-                  }
-                },
                 "analyzer": {
                     "vietnamese_analyzer": {
                         "type": "custom",
                         "tokenizer": "standard",
                         "filter": [
-                            "vi_stopwords",
                             "lowercase",
-                            "asciifolding",
+                            "number_synonym_filter",
                             "vn_number_mapper",
-                            "synonym_sports"
-                        ],
-                        "char_filter": [
-                            "number_mapping"
+                            "vi_stopwords",
+                            "asciifolding",
+                            "my_shingle_filter",
                         ]
+
                     },
-                    "vi_shingle_keep_analyzer": {
+                    "vietnamese_search_analyzer": {
                         "type": "custom",
                         "tokenizer": "standard",
-                        "char_filter": [
-                            "number_mapping"
-                        ],
                         "filter": [
                             "lowercase",
-                            "my_shingle_filter",
-                            "keep_words_filter"
+                            "number_synonym_filter",
+                            "vn_number_mapper",
+                            "vi_stopwords",
+                            "my_synonym_filter",
+                            "asciifolding"
                         ]
                     }
-                  }
-
+                }
             }
         },
         "mappings": {
@@ -154,26 +153,20 @@ index_template = {
                 },
                 "title-va": {
                     "analyzer": "vietnamese_analyzer",
+                    "search_analyzer": "vietnamese_search_analyzer",
                     "similarity": "title_bm25",
                     "type": "text"
                 },
-                "title-vska" :{
-                    "analyzer": "vi_shingle_keep_analyzer",
-                    "similarity": "title_bm25",
-                    "type": "text"
-                },
-                "content-vska": {
-                    "analyzer": "vi_shingle_keep_analyzer",
-                    "similarity": "content_bm25",
-                    "type": "text"
-                },
+
                 "content-va": {
                     "analyzer": "vietnamese_analyzer",
+                    "search_analyzer": "vietnamese_search_analyzer",
                     "similarity": "content_bm25",
                     "type": "text"
                 },
-                "length": {
-                    "type": "integer"
+
+                "pub_ts":{
+                    "type": "date"
                 },
                 "last_updated": {
                     "type": "date"
