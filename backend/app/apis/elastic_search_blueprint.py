@@ -24,7 +24,7 @@ def _expand_search_fields(fields: list) -> list:
         List of Elasticsearch field names with optional boosting
     """
     if not fields:
-        return ["content-va^3", "title-va"]
+        return ["content-va^2", "title-va"]
     
     mapping = {
         "title": "title-va",
@@ -33,19 +33,34 @@ def _expand_search_fields(fields: list) -> list:
     
     return [mapping[field] for field in fields if field in mapping]
 
-def build_highlight_summary(hit: dict, field: str) -> Optional[str]:
+def build_highlight_summary(hit: dict, title_field: str = "title-va", content_field: str = "content-va") -> Optional[str]:
     highlight = hit.get("highlight")
     if not highlight:
         return None
 
-    fragments = highlight.get(field)
-    if not fragments:
-        return None
-
-    if isinstance(fragments, list):
-        return " ... ".join(fragments)
-
-    return str(fragments)
+    parts = []
+    
+    # Xử lý title highlight
+    title_fragments = highlight.get(title_field)
+    if title_fragments:
+        if isinstance(title_fragments, list):
+            parts.append(" ... ".join(title_fragments))
+        else:
+            parts.append(str(title_fragments))
+    
+    # Xử lý content highlight
+    content_fragments = highlight.get(content_field)
+    if content_fragments:
+        if isinstance(content_fragments, list):
+            parts.append(" ... ".join(content_fragments))
+        else:
+            parts.append(str(content_fragments))
+    
+    # Nối title và content với " ... "
+    if parts:
+        return " ... ".join(parts)
+    
+    return None
 
 
 @bp.get("/ping")
@@ -145,7 +160,7 @@ async def search_match(request, index_name: str):
                 "query": body.query,
                 "fields": fields,
                 "fuzziness": "AUTO",
-                "type": "best_fields"
+                "type": "most_fields"
             }
         },
         "highlight": {
@@ -157,13 +172,12 @@ async def search_match(request, index_name: str):
             ],
             "fields": {
                 "content-va": {
-                    "number_of_fragments": 2,
-                    "fragment_size": 50,
-                    "highlight_query": {
-                        "match": {
-                            "content-va": body.query
-                        }
-                    }
+                    "number_of_fragments": 4,
+                    "fragment_size": 50
+                },
+                "title-va":{
+                    "number_of_fragments": 4,
+                    "fragment_size": 50
                 }
             }
         },
@@ -190,7 +204,7 @@ async def search_match(request, index_name: str):
     for hit in hits:
         doc = DocumentDto(**hit["_source"])
 
-        highlight_summary = build_highlight_summary(hit, "content-va")
+        highlight_summary = build_highlight_summary(hit, "title-va", "content-va")
         if highlight_summary:
             doc.content_va = highlight_summary   # ghi đè
 

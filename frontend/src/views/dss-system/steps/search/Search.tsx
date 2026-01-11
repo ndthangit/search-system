@@ -24,7 +24,6 @@ import ThemeToggle from "../../../../components/ThemeToggle.tsx";
 const FIELD_OPTIONS = [
   { value: ["title", "link", "content"], label: "Tất cả" },
   { value: ["title"], label: "Tiêu đề" },
-  { value: ["link"], label: "Đường dẫn" },
   { value: ["content"], label: "Nội dung" },
 ];
 
