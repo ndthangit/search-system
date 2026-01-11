@@ -69,7 +69,7 @@ index_template = {
                         "replacement": "$1-$2"
                       },
                     "my_synonym_filter": {
-                      "type": "synonym",
+                      "type": "synonym_graph",
                       "synonyms": [
                         # Thể thao chung
                         "thể thao, sport, thể dục",
@@ -77,7 +77,7 @@ index_template = {
                         "trận đấu, trận, cuộc đọ sức, thi đấu",
                          # Bóng đá
 
-                        "đá bóng,  bóng đá, túc cầu",
+                        "đá bóng, bóng đá, túc cầu",
                         "sân vận động, sân cỏ, svd",
                         "huấn luyện viên, hlv",
                         "trọng tài, vua áo đen",
@@ -140,7 +140,7 @@ index_template = {
                             "vi_stopwords",
                             "my_synonym_filter",
                             "asciifolding",
-                            "my_shingle_filter",
+                            # "my_shingle_filter",
                             "remove_duplicates"
                         ]
                     }
