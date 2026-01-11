@@ -140,7 +140,7 @@ index_template = {
                             "vn_number_mapper",
                             "vi_stopwords",
                             "my_synonym_filter",
-                            "asciifolding",
+                            "asciifolding"
                         ]
                     }
                 }
