@@ -137,11 +137,10 @@ index_template = {
                         "filter": [
                             "lowercase",
                             "number_synonym_filter",
+                            "vn_number_mapper",
                             "vi_stopwords",
                             "my_synonym_filter",
                             "asciifolding",
-                            # "my_shingle_filter",
-                            "remove_duplicates"
                         ]
                     }
                 }
