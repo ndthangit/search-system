@@ -65,7 +65,7 @@ class SportNewsSpider(scrapy.Spider):
                 {
                     "query": {"match_all": {}},
                     "size": 1000000,
-                    "_source": ["link", "content"]
+                    "_source": ["link", "content", "content_hash", "last_updated"]
                 }
             )
 
@@ -86,10 +86,11 @@ class SportNewsSpider(scrapy.Spider):
 
                 self.crawler.engine.crawl(req)
 
+            # After checking dead links, do random content update checks
+            await self._random_check_update(result)
+
         except Exception as e:
             self.logger.error(f"ES validation failed: {e}")
-
-        await self._random_check_update()
 
         self.validation_complete = True
         self.logger.info("ES validation complete")
@@ -101,38 +102,65 @@ class SportNewsSpider(scrapy.Spider):
         d = defer.ensureDeferred(self.es_service.delete_doc(ES_INDEX, doc_id))
         return d
 
-    #get some random links and get content to check update
-    async def _random_check_update(self):
+    # get some random links and get content to check update
+    async def _random_check_update(self, result):
         self.logger.info("Start random_check_update")
-
-        threshold = datetime.now(timezone.utc) - timedelta(days=RANDOM_CHECK_DAYS)
-
-        result = await self.es_service.search_match(
-            ES_INDEX,
-            {
-                "query": {
-                    "range": {
-                        "last_updated": {
-                            "lt": threshold.isoformat()
-                        }
-                    }
-                },
-                "size": 10000,
-                "_source": ["link", "content_hash", "last_updated"]
-            }
-        )
 
         hits = result.get("hits", {}).get("hits", [])
         if not hits:
             self.logger.info("No docs eligible for random check")
             return
 
-        candidates = sample(
-            hits,
-            min(RANDOM_CHECK_SIZE, len(hits))
-        )
+        now = datetime.now(timezone.utc)
+        threshold = now - timedelta(days=RANDOM_CHECK_DAYS)
 
-        self.logger.info(f"Random check {len(candidates)} documents")
+        stale_docs = []
+        recent_docs = []
+
+        for hit in hits:
+            src = hit.get("_source", {})
+            last_updated_raw = src.get("last_updated")
+
+            if not last_updated_raw:
+                stale_docs.append(hit)
+                continue
+
+            try:
+                last_updated = datetime.fromisoformat(last_updated_raw)
+            except Exception:
+                stale_docs.append(hit)
+                continue
+
+            if last_updated < threshold:
+                stale_docs.append(hit)
+            else:
+                recent_docs.append(hit)
+
+        candidates = []
+
+        # Phase 1:
+        if stale_docs:
+            candidates.extend(
+                sample(
+                    stale_docs,
+                    min(RANDOM_CHECK_SIZE, len(stale_docs))
+                )
+            )
+
+        # Phase 2:
+        remaining = RANDOM_CHECK_SIZE - len(candidates)
+        if remaining > 0 and recent_docs:
+            candidates.extend(
+                sample(
+                    recent_docs,
+                    min(remaining, len(recent_docs))
+                )
+            )
+
+        self.logger.info(
+            f"Random check {len(candidates)} documents "
+            f"(stale={len(stale_docs)}, recent={len(recent_docs)})"
+        )
 
         for hit in candidates:
             src = hit["_source"]
@@ -231,10 +259,6 @@ class SportNewsSpider(scrapy.Spider):
             "link": response.meta["link"],
             "summary": response.meta["summary"],
             "content": full_content,
-            "content-va": full_content,
-            "content-vska": full_content,
-            "title-va": response.meta["title"],
-            "title-vska": response.meta["title"],
             "length": len(full_content),
             "content_hash": hash_content(full_content),
             "last_updated": response.meta["pub_ts"],

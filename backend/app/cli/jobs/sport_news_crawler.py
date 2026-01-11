@@ -28,11 +28,7 @@ class SportNewsCrawler(AsyncSchedulerJob):
         subprocess.run([
             "scrapy",
             "crawl",
-            "sport_news",
-            "-o",
-            "data/sport_news.jsonl",
-            "-L",
-            "INFO"
+            "sport_news"
         ])
 
 if __name__ == "__main__":
