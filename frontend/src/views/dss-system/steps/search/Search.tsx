@@ -76,9 +76,8 @@ export default function Search() {
   const articles: Article[] =
     data?.data?.map((item) => ({
       id: item.id || "",
-      title: item.source.title_va || item.source.title_vska,
+      title: item.source.title_va || "",
       content: item.source.content_va || "",
-      content_vska: item.source.content_vska || "",
       url: item.source.link || "",
       date: item.source.last_updated
         ? new Date(item.source.last_updated).toISOString()

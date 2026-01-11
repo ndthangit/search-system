@@ -2,7 +2,6 @@ export interface Article {
     id: string;
     title: string;
     content: string;
-    content_vska?: string;
     url: string;
     date: string;
     contents?: string;
@@ -14,9 +13,7 @@ export interface Article {
 export interface ArticleSource {
     link: string;
     title_va: string;
-    title_vska: string;
     content_va: string;
-    content_vska: string;
     length: number;
     last_updated: string;
 }
