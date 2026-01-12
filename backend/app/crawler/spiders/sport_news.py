@@ -1,6 +1,8 @@
 import json
 import os
 import re
+import time
+
 import scrapy
 import hashlib
 
@@ -79,11 +81,11 @@ class SportNewsSpider(scrapy.Spider):
                 req = scrapy.Request(
                     url=link,
                     method="HEAD",
-                    errback=self._head_err,
+                    callback=self._check_link,
                     meta={"doc_id": doc_id},
                     dont_filter=True
                 )
-
+                time.sleep(1)
                 self.crawler.engine.crawl(req)
 
             # After checking dead links, do random content update checks
@@ -96,11 +98,14 @@ class SportNewsSpider(scrapy.Spider):
         self.logger.info("ES validation complete")
 
    # delete if link not reachable
-    def _head_err(self, failure):
-        doc_id = failure.request.meta["doc_id"]
-        self.logger.info(f"Dead link detected, deleting ES doc: {doc_id}")
-        d = defer.ensureDeferred(self.es_service.delete_doc(ES_INDEX, doc_id))
-        return d
+    def _check_link(self, response):
+        doc_id = response.meta["doc_id"]
+
+        if response.status in (404, 410):
+            self.logger.info(f"404/410 confirmed, deleting ES doc: {doc_id}")
+            return defer.ensureDeferred(
+                self.es_service.delete_doc(ES_INDEX, doc_id)
+            )
 
     # get some random links and get content to check update
     async def _random_check_update(self, result):
@@ -245,6 +250,8 @@ class SportNewsSpider(scrapy.Spider):
                 },
                 dont_filter=True
             )
+
+            time.sleep(1)
 
     def parse_detail(self, response):
         doc_id = extract_article_id(response.meta["link"])

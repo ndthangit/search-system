@@ -25,6 +25,8 @@ ROBOTSTXT_OBEY = False
 CONCURRENT_REQUESTS_PER_DOMAIN = 1
 DOWNLOAD_DELAY = 1
 
+RETRY_ENABLED = True
+RETRY_TIMES = 5
 # Disable cookies (enabled by default)
 #COOKIES_ENABLED = False
 
